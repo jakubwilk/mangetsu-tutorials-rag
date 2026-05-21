@@ -88,6 +88,13 @@ Po zakończeniu implementacji:
 - Brak ORM — surowe SQL z typowanymi query helperami
 - Migracje: proste pliki `.sql` uruchamiane ręcznie lub przez seed script
 
+### Historia konwersacji
+
+- Każda wiadomość zapisywana do bazy: tabela `conversations` (session_id, ip) + tabela `messages` (role, content, tokens_used)
+- `session_id` — UUID generowany po stronie klienta, przechowywany w `localStorage`, wysyłany z każdym requestem
+- IP z nagłówka `X-Forwarded-For` (ustawianego przez Coolify/Nginx): `headers().get('x-forwarded-for')?.split(',')[0]`
+- `localStorage` nadal używany do wyświetlania historii w UI (szybki odczyt bez zapytania do DB)
+
 ### AI / LLM
 
 - **OVH AI Endpoints** — API kompatybilne z OpenAI; używaj pakietu `openai` npm z własnym `baseURL`
@@ -129,13 +136,25 @@ Po zakończeniu implementacji:
 - Nie dodawaj nowych zależności bez uzgodnienia z użytkownikiem
 - Nie instaluj bibliotek które rozwiązują jeden mały problem (preferuj własną implementację dla prostych rzeczy)
 - Nie używaj Server Actions do mutacji danych — używaj Route Handlers (API Routes) dla jasności
-- Nie przechowuj danych użytkownika na serwerze — historia czatu zostaje w `localStorage`
 
 ### Deployment
 
 - Nie commituj `.env` ani `.env.local` — tylko `.env.example` z placeholderami
 - Nie hardcoduj URL-i, kluczy API ani portów w kodzie
 - Nie dodawaj Dockerfile — deployment idzie przez Coolify + Nixpacks z GitHub repo
+
+---
+
+## Pluginy Claude Code
+
+Aktywne pluginy w `.claude/settings.json` — używaj ich zamiast ręcznego podejścia gdy pasują do zadania.
+
+| Plugin | Kiedy używać |
+|--------|--------------|
+| **feature-dev** | Rozpoczęcie nowej funkcjonalności — prowadzi przez zrozumienie kodu, architekturę i implementację krok po kroku |
+| **frontend-design** | Budowanie komponentów UI, stron lub całych widoków — generuje produkcyjnej jakości interfejsy, unika generycznych wzorców |
+| **typescript-lsp** | Diagnostyka błędów TypeScript, podpowiedzi typów, nawigacja po symbolach bez uruchamiania buildu |
+| **claude-md-management** | Audyt i aktualizacja CLAUDE.md po sesji — `/revise-claude-md` zapisuje wnioski z bieżącej sesji, `/claude-md-improver` sprawdza jakość całego pliku |
 
 ---
 
