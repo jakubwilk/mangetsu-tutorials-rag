@@ -1,5 +1,7 @@
 import { readFile } from 'fs/promises'
 import path from 'path'
+
+import ChatView from '@/components/chat/ChatView'
 import AppLayout from '@/components/layout/AppLayout'
 import ChatSidebar from '@/components/layout/ChatSidebar'
 import DocsPanel from '@/components/layout/DocsPanel'
@@ -12,9 +14,7 @@ export default async function Home() {
 
   return (
     <AppLayout sidebar={<ChatSidebar />} docsPanel={<DocsPanel content={docsContent} />}>
-      <div style={{ padding: '2rem', color: 'var(--mantine-color-dimmed)' }}>
-        Panel czatu — Faza 4
-      </div>
+      <ChatView />
     </AppLayout>
   )
 }
