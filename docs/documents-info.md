@@ -1,23 +1,30 @@
-# Baza wiedzy — dostępne poradniki
+System posiada wiedzę wyłącznie z poniższych wątków dostępnych na forum:
 
-Asystent posiada dostęp do następujących materiałów z forum **Mangetsu**:
+**Realia**
 
-## Mechaniki gry
+- [fabuła forum](https://mangetsu.jcink.net/index.php?showtopic=2)
+- [linia czasu forum](https://mangetsu.jcink.net/index.php?showtopic=3)
+- [mangetsu](https://mangetsu.jcink.net/index.php?showtopic=4)
 
-Poradniki opisujące fundamentalne zasady systemu RPG używanego na forum — walka, testy umiejętności, mechaniki magii oraz ogólne reguły rozgrywki.
+**Kompendium**
 
-## Tworzenie postaci
+- [domeny](https://mangetsu.jcink.net/index.php?showtopic=35)
+- [kontrakty i restrykcje](https://mangetsu.jcink.net/index.php?showtopic=85)
+- [kręgi czarowników](https://mangetsu.jcink.net/index.php?showtopic=50)
+- [poziomy klątw](https://mangetsu.jcink.net/index.php?showtopic=49)
+- [przeklęta energia](https://mangetsu.jcink.net/index.php?showtopic=20)
+- [standardowy czarownik jujutsu](https://mangetsu.jcink.net/index.php?showtopic=36)
 
-Materiały dotyczące procesu kreacji bohaterów: rasy, klasy, atrybuty, zdolności startowe oraz wskazówki jak budować spójną i grywalną postać.
+**Mechanika**
 
-## Lore i świat
-
-Opisy świata przedstawionego — historia, geografia, frakcje, ważne postacie niezależne oraz wydarzenia kształtujące realia forum.
-
-## Poradniki dla początkujących
-
-Przewodniki wprowadzające nowych graczy w specyfikę forum: netykieta, standardy postowania, jak dołączyć do wątków i co warto wiedzieć na start.
-
----
-
-> Asystent odpowiada wyłącznie na podstawie powyższych materiałów. Jeśli pytanie wykracza poza dostępną bazę wiedzy, zostaniesz o tym poinformowany.
+- [ekwipunek](https://mangetsu.jcink.net/index.php?showtopic=436)
+- [misje i wyzwania](https://mangetsu.jcink.net/index.php?showtopic=44)
+- [profesje](https://mangetsu.jcink.net/index.php?showtopic=38)
+- [rzeczy przeklęte](https://mangetsu.jcink.net/index.php?showtopic=472)
+- [sklep jujutsu](https://mangetsu.jcink.net/index.php?showtopic=39)
+- [statystyki](https://mangetsu.jcink.net/index.php?showtopic=15)
+- [style walki](https://mangetsu.jcink.net/index.php?showtopic=37)
+- [system obrażeń i leczenie](https://mangetsu.jcink.net/index.php?showtopic=40)
+- [system walki](https://mangetsu.jcink.net/index.php?showtopic=42)
+- [techniki](https://mangetsu.jcink.net/index.php?showtopic=43)
+- [waluty](https://mangetsu.jcink.net/index.php?showtopic=41)
