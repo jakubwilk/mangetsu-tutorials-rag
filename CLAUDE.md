@@ -155,6 +155,7 @@ Aktywne pluginy w `.claude/settings.json` — używaj ich zamiast ręcznego pode
 | **frontend-design** | Budowanie komponentów UI, stron lub całych widoków — generuje produkcyjnej jakości interfejsy, unika generycznych wzorców |
 | **typescript-lsp** | Diagnostyka błędów TypeScript, podpowiedzi typów, nawigacja po symbolach bez uruchamiania buildu |
 | **claude-md-management** | Audyt i aktualizacja CLAUDE.md po sesji — `/revise-claude-md` zapisuje wnioski z bieżącej sesji, `/claude-md-improver` sprawdza jakość całego pliku |
+| **code-review** | Review kodu po implementacji — analizuje PR lub zmiany pod kątem jakości, bezpieczeństwa i spójności z projektem |
 
 ---
 
