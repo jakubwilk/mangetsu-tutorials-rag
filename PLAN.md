@@ -78,18 +78,20 @@ Każdy komunikat potrzebuje `id` (do śledzenia odrzuconych w localStorage), `ty
 
 ### Zadania
 
-- [ ] Przepisać `src/app/page.tsx` — czysty wrapper, ładuje `ChatView`
-- [ ] Utworzyć `src/components/chat/ChatView.tsx` — Client Component, główny kontener
-- [ ] Utworzyć `src/components/chat/MessageList.tsx` — lista wiadomości ze scrollem
-- [ ] Utworzyć `src/components/chat/MessageBubble.tsx` — bąbelki user/assistant
+- [x] Przepisać `src/app/page.tsx` — czysty wrapper, ładuje `ChatView`
+- [x] Utworzyć `src/components/chat/ChatView.tsx` — Client Component, główny kontener
+- [x] Utworzyć `src/components/chat/MessageList.tsx` — lista wiadomości ze scrollem
+- [x] Utworzyć `src/components/chat/MessageBubble.tsx` — bąbelki user/assistant
   - User: wyrównane do prawej, tło w kolorze primary, plain text
   - Assistant: wyrównane do lewej, tło neutralne, treść przez `react-markdown`
-  - Animacja pojawiania się (Mantine `Transition`)
-- [ ] Utworzyć `src/components/chat/ChatInput.tsx` — pole tekstowe + przycisk wyślij
+  - Animacja pojawiania się (CSS `bubble-in` — zamiast Mantine `Transition` ze względu na regułę ESLint `react-hooks/set-state-in-effect`)
+- [x] Utworzyć `src/components/chat/ChatInput.tsx` — pole tekstowe + przycisk wyślij
   - `Textarea` z auto-resize (Mantine `autosize`)
   - Enter wysyła, Shift+Enter = nowa linia
   - Dezaktywacja podczas ładowania odpowiedzi
-- [ ] Placeholder pusty czat — zachęta do wpisania pytania (widoczna gdy brak wiadomości)
+- [x] Placeholder pusty czat — zachęta do wpisania pytania (widoczna gdy brak wiadomości)
+- [x] Typing indicator — ikona książki z pulsowaniem + losowy tekst z `src/data/loading-messages.json`
+- [x] Floating card design dla ChatInput (bez borderTop, `borderRadius`, `boxShadow`, `maxWidth`, `variant="unstyled"` na Textarea)
 
 ---
 

@@ -183,3 +183,12 @@ Typy: `feat`, `fix`, `refactor`, `test`, `chore`, `docs`, `style`
 - Skala: max ~15 użytkowników, ruch minimalny
 - Język interfejsu: polski
 - Język kodu / komentarzy: angielski
+
+## Plan implementacji
+
+Harmonogram faz UI i backend: **`PLAN.md`** w root projektu.
+
+- Fazy 1–3: ukończone (motyw, pliki statyczne, App Shell)
+- Faza 4+: panel czatu, system ogłoszeń, powiadomienia, integracja
+- Format statusu: `[ ]` = do zrobienia, `[x]` = ukończone, `[~]` = w toku
+- Po ukończeniu fazy: zaktualizuj statusy w `PLAN.md` i zrób commit
