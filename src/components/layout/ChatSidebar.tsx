@@ -35,7 +35,7 @@ export default function ChatSidebar({ requestsUsed = 0, requestsTotal = 10 }: Ch
 
       <Divider />
 
-      <Stack style={{ flex: 1, overflow: 'auto' }} p="md" gap="xs">
+      <Stack className="flex-1 overflow-auto" p="md" gap="xs">
         <Text size="xs" c="dimmed" ta="center" mt="sm">
           Brak historii czatów
         </Text>

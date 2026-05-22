@@ -50,7 +50,7 @@ export default function ChatView() {
   )
 
   return (
-    <Box style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <Box className="flex flex-col h-full">
       <MessageList messages={messages} isLoading={isLoading} />
       <ChatInput onSend={sendMessage} disabled={isLoading} />
     </Box>

@@ -7,21 +7,18 @@ export default function Topbar() {
     <Box
       component="header"
       px="md"
+      className="h-[60px] shrink-0 flex items-center"
       style={{
-        height: 60,
-        flexShrink: 0,
         borderBottom: '1px solid var(--mantine-color-dark-5)',
         background: 'var(--mantine-color-dark-8)',
-        display: 'flex',
-        alignItems: 'center',
       }}
     >
-      <Group justify="space-between" style={{ width: '100%' }}>
-        <Text c="mangetsu.4" style={{ userSelect: 'none', lineHeight: 1 }}>
-          <span style={{ fontFamily: 'Times New Roman, serif', fontWeight: 400, fontSize: '1.75rem' }}>
+      <Group justify="space-between" className="w-full">
+        <Text c="mangetsu.4" className="select-none leading-none">
+          <span style={{ fontFamily: 'Times New Roman, serif' }} className="font-normal text-[1.75rem]">
             mangetsu
           </span>
-          <span style={{ fontWeight: 700, fontSize: '0.85rem', color: 'white', letterSpacing: '0.05em' }}>
+          <span className="font-bold text-[0.85rem] text-white tracking-[0.05em]">
             {' '}RAG
           </span>
         </Text>

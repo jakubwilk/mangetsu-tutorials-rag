@@ -8,11 +8,11 @@ interface AppLayoutProps {
 
 export default function AppLayout({ children, sidebar, docsPanel }: AppLayoutProps) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+    <div className="flex flex-col h-screen overflow-hidden">
       <Topbar />
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+      <div className="flex flex-1 overflow-hidden">
         {sidebar}
-        <main style={{ flex: 1, overflow: 'auto' }}>{children}</main>
+        <main className="flex-1 overflow-auto">{children}</main>
         {docsPanel}
       </div>
     </div>

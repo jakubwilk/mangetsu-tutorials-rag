@@ -25,10 +25,10 @@ function BookIcon() {
       strokeWidth={2}
       strokeLinecap="round"
       strokeLinejoin="round"
+      className="shrink-0"
       style={{
         color: 'var(--mantine-color-mangetsu-5)',
         animation: 'icon-pulse 1.6s ease-in-out infinite',
-        flexShrink: 0,
       }}
     >
       <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
@@ -43,20 +43,17 @@ function TypingIndicator() {
   )
 
   return (
-    <Box style={{ display: 'flex', justifyContent: 'flex-start' }}>
+    <Box className="flex justify-start">
       <Box
+        className="flex gap-2 items-center py-2.5 px-4"
         style={{
           background: 'var(--mantine-color-dark-6)',
           borderRadius:
             'var(--mantine-radius-lg) var(--mantine-radius-lg) var(--mantine-radius-lg) var(--mantine-radius-xs)',
-          padding: '0.625rem 1rem',
-          display: 'flex',
-          gap: '0.5rem',
-          alignItems: 'center',
         }}
       >
         <BookIcon />
-        <Text size="sm" c="dimmed" style={{ fontStyle: 'italic' }}>
+        <Text size="sm" c="dimmed" className="italic">
           {text}
         </Text>
       </Box>
@@ -78,7 +75,7 @@ export default function MessageList({ messages, isLoading }: MessageListProps) {
 
   if (messages.length === 0 && !isLoading) {
     return (
-      <Center style={{ flex: 1 }}>
+      <Center className="flex-1">
         <Box ta="center" px="xl">
           <Text size="xl" fw={300} c="dimmed" mb="xs">
             Zadaj pytanie o poradniki
@@ -92,8 +89,8 @@ export default function MessageList({ messages, isLoading }: MessageListProps) {
   }
 
   return (
-    <ScrollArea style={{ flex: 1 }} viewportRef={viewportRef}>
-      <Box p="md" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+    <ScrollArea className="flex-1" viewportRef={viewportRef}>
+      <Box p="md" className="flex flex-col gap-3">
         {messages.map((message) => (
           <MessageBubble key={message.id} message={message} />
         ))}

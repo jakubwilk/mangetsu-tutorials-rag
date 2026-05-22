@@ -14,36 +14,31 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
 
   return (
     <Box
-      style={{
-        display: 'flex',
-        justifyContent: isUser ? 'flex-end' : 'flex-start',
-        animation: 'bubble-in 250ms ease',
-      }}
+      className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
+      style={{ animation: 'bubble-in 250ms ease' }}
     >
       <Box
+        className="max-w-[75%] py-2.5 px-3.5"
         style={{
-          maxWidth: '75%',
           borderRadius: isUser
             ? 'var(--mantine-radius-lg) var(--mantine-radius-lg) var(--mantine-radius-xs) var(--mantine-radius-lg)'
             : 'var(--mantine-radius-lg) var(--mantine-radius-lg) var(--mantine-radius-lg) var(--mantine-radius-xs)',
-          padding: '0.625rem 0.875rem',
           background: isUser
             ? 'var(--mantine-color-mangetsu-7)'
             : 'var(--mantine-color-dark-6)',
         }}
       >
         {isUser ? (
-          <Text size="sm" style={{ whiteSpace: 'pre-wrap', color: 'white' }}>
+          <Text size="sm" c="white" className="whitespace-pre-wrap">
             {message.content}
           </Text>
         ) : (
           <Box
+            className="chat-markdown leading-[1.65]"
             style={{
               fontSize: 'var(--mantine-font-size-sm)',
-              lineHeight: 1.65,
               color: 'var(--mantine-color-gray-2)',
             }}
-            className="chat-markdown"
           >
             <ReactMarkdown>{message.content}</ReactMarkdown>
           </Box>

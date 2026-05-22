@@ -44,23 +44,16 @@ export default function ChatInput({ onSend, disabled }: ChatInputProps) {
   }
 
   return (
-    <Box px="xl" pb="xl" pt="md" style={{ flexShrink: 0 }}>
+    <Box px="xl" pb="xl" pt="md" className="shrink-0">
       <Box
+        className="mx-auto flex max-w-195 items-end gap-2 rounded-2xl py-2.5 pr-2.5 pl-5 shadow-[0_2px_12px_rgba(0,0,0,0.2)]"
         style={{
-          maxWidth: 780,
-          margin: '0 auto',
           background: 'var(--mantine-color-dark-6)',
-          borderRadius: '1rem',
           border: '1px solid var(--mantine-color-dark-4)',
-          boxShadow: '0 2px 12px rgba(0, 0, 0, 0.2)',
-          padding: '0.625rem 0.625rem 0.625rem 1.25rem',
-          display: 'flex',
-          alignItems: 'flex-end',
-          gap: '0.5rem',
         }}
       >
         <Textarea
-          style={{ flex: 1 }}
+          className="flex-1"
           variant="unstyled"
           placeholder="Zadaj pytanie…"
           value={value}
@@ -80,7 +73,7 @@ export default function ChatInput({ onSend, disabled }: ChatInputProps) {
           onClick={handleSend}
           disabled={disabled || !value.trim()}
           radius="md"
-          style={{ flexShrink: 0 }}
+          className="shrink-0"
           aria-label="Wyślij wiadomość"
         >
           <SendIcon />

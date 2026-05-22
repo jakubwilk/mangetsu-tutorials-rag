@@ -25,14 +25,15 @@ export default function DocsPanel({ content }: DocsPanelProps) {
       <Box
         px="md"
         py="sm"
-        style={{ borderBottom: '1px solid var(--mantine-color-dark-5)', flexShrink: 0 }}
+        className="shrink-0"
+        style={{ borderBottom: '1px solid var(--mantine-color-dark-5)' }}
       >
-        <Text size="sm" fw={600} c="dimmed" style={{ userSelect: 'none' }}>
+        <Text size="sm" fw={600} c="dimmed" className="select-none">
           Baza wiedzy
         </Text>
       </Box>
 
-      <ScrollArea style={{ flex: 1 }} p="md">
+      <ScrollArea className="flex-1" p="md">
         <Typography>
           <ReactMarkdown>{content}</ReactMarkdown>
         </Typography>
