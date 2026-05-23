@@ -118,9 +118,9 @@ Każdy komunikat potrzebuje `id` (do śledzenia odrzuconych w localStorage), `ty
 
 ### Zadania
 
-- [ ] Skonfigurować Mantine `Notifications` — `position="top-center"`, `limit={3}`, `autoClose={5000}`
-- [ ] Utworzyć `src/lib/notifications.ts` — helper funkcje `notifyError()`, `notifyInfo()`, `notifyWarning()` owijające `notifications.show()`
-- [ ] Ostylować powiadomienia zgodnie z dark theme
+- [x] Skonfigurować Mantine `Notifications` — `position="top-center"`, `limit={3}`, `autoClose={10000}`
+- [x] Utworzyć `src/lib/notifications.ts` — helper funkcje `notifyError()`, `notifyInfo()`, `notifyWarning()` owijające `notifications.show()`
+- [x] Ostylować powiadomienia zgodnie z dark theme
 
 ---
 
