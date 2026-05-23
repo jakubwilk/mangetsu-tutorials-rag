@@ -1,7 +1,9 @@
 'use client'
 
 import { Box } from '@mantine/core'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react'
+
+import { chatStore } from '@/store'
 
 import ChatInput from './ChatInput'
 import MessageList from './MessageList'
@@ -19,12 +21,24 @@ const MOCK_RESPONSES = [
 ]
 
 export default function ChatView() {
-  const [messages, setMessages] = useState<Message[]>([])
+  const { sessions, activeSessionId, requestsUsed } = useSyncExternalStore(
+    chatStore.subscribe,
+    chatStore.getSnapshot,
+    chatStore.getServerSnapshot
+  )
+
+  useEffect(() => {
+    chatStore.init()
+  }, [])
+
   const [isLoading, setIsLoading] = useState(false)
+
+  const activeSession = sessions.find((s) => s.id === activeSessionId)
+  const messages = activeSession?.messages ?? []
 
   const sendMessage = useCallback(
     async (text: string) => {
-      if (!text.trim() || isLoading) return
+      if (!text.trim() || isLoading || requestsUsed >= chatStore.requestLimit) return
 
       const userMessage: Message = {
         id: crypto.randomUUID(),
@@ -32,7 +46,8 @@ export default function ChatView() {
         content: text.trim(),
       }
 
-      setMessages((prev) => [...prev, userMessage])
+      chatStore.addMessage(userMessage)
+      chatStore.incrementRequests()
       setIsLoading(true)
 
       await new Promise<void>((resolve) => setTimeout(resolve, 1200))
@@ -43,16 +58,19 @@ export default function ChatView() {
         content: MOCK_RESPONSES[Math.floor(Math.random() * MOCK_RESPONSES.length)],
       }
 
-      setMessages((prev) => [...prev, assistantMessage])
+      chatStore.addMessage(assistantMessage)
       setIsLoading(false)
     },
-    [isLoading]
+    [isLoading, requestsUsed]
   )
 
   return (
     <Box className="flex flex-col h-full">
       <MessageList messages={messages} isLoading={isLoading} />
-      <ChatInput onSend={sendMessage} disabled={isLoading} />
+      <ChatInput
+        onSend={sendMessage}
+        disabled={isLoading || requestsUsed >= chatStore.requestLimit}
+      />
     </Box>
   )
 }

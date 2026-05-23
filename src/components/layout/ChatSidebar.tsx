@@ -1,15 +1,27 @@
 'use client'
 
-import { Box, Button, Divider, Group, Stack, Text } from '@mantine/core'
+import { Box, Button, Divider, Group, Stack, Text, UnstyledButton } from '@mantine/core'
+import { useSyncExternalStore } from 'react'
+
+import { chatStore } from '@/store'
 
 const PANEL_WIDTH = { width: '20vw', maxWidth: 300, flexShrink: 0 }
 
-interface ChatSidebarProps {
-  requestsUsed?: number
-  requestsTotal?: number
+function getSessionPreview(messages: { role: string; content: string }[]): string {
+  const first = messages.find((m) => m.role === 'user')
+  if (!first) return 'Nowy czat'
+  return first.content.length > 40 ? first.content.slice(0, 40) + '…' : first.content
 }
 
-export default function ChatSidebar({ requestsUsed = 0, requestsTotal = 10 }: ChatSidebarProps) {
+export default function ChatSidebar() {
+  const { sessions, activeSessionId, requestsUsed } = useSyncExternalStore(
+    chatStore.subscribe,
+    chatStore.getSnapshot,
+    chatStore.getServerSnapshot
+  )
+
+  const visibleSessions = sessions.filter((s) => s.messages.length > 0)
+
   return (
     <Box
       component="nav"
@@ -28,6 +40,7 @@ export default function ChatSidebar({ requestsUsed = 0, requestsTotal = 10 }: Ch
           variant="filled"
           size="sm"
           className="!bg-white !text-gray-900 hover:!bg-gray-100"
+          onClick={() => chatStore.newSession()}
         >
           + Nowy czat
         </Button>
@@ -35,10 +48,31 @@ export default function ChatSidebar({ requestsUsed = 0, requestsTotal = 10 }: Ch
 
       <Divider />
 
-      <Stack className="flex-1 overflow-auto" p="md" gap="xs">
-        <Text size="xs" c="dimmed" ta="center" mt="sm">
-          Brak historii czatów
-        </Text>
+      <Stack className="flex-1 overflow-auto" p="md" gap={4}>
+        {visibleSessions.length === 0 ? (
+          <Text size="xs" c="dimmed" ta="center" mt="sm">
+            Brak historii czatów
+          </Text>
+        ) : (
+          visibleSessions.map((session) => (
+            <UnstyledButton
+              key={session.id}
+              onClick={() => chatStore.switchSession(session.id)}
+              style={{
+                padding: '6px 8px',
+                borderRadius: 6,
+                background:
+                  session.id === activeSessionId
+                    ? 'var(--mantine-color-dark-5)'
+                    : 'transparent',
+              }}
+            >
+              <Text size="xs" c={session.id === activeSessionId ? 'white' : 'dimmed'} truncate>
+                {getSessionPreview(session.messages)}
+              </Text>
+            </UnstyledButton>
+          ))
+        )}
       </Stack>
 
       <Divider />
@@ -49,7 +83,7 @@ export default function ChatSidebar({ requestsUsed = 0, requestsTotal = 10 }: Ch
         </Text>
         <Group gap="xs" mt={4} align="baseline">
           <Text fw={700} size="sm" c="mangetsu.4">
-            {requestsUsed}/{requestsTotal}
+            {requestsUsed}/{chatStore.requestLimit}
           </Text>
           <Text size="xs" c="dimmed">
             wykorzystanych
