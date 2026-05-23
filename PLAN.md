@@ -137,6 +137,143 @@ Każdy komunikat potrzebuje `id` (do śledzenia odrzuconych w localStorage), `ty
 
 ---
 
+---
+
+## Faza 8 — Baza danych i indeksowanie treści
+
+**Cel:** działająca baza z wczytanymi poradnikami, gotowa do przeszukiwania.
+
+### Nowe zależności
+
+- `prisma` (devDependency) + `@prisma/client` — ORM
+- `openai` — klient OVH AI Endpoints (instalowany już w tej fazie, używany w Fazie 9)
+
+### Zmiany konfiguracyjne
+
+- `package.json` — dodać `"postinstall": "prisma generate"` (wymagane dla Coolify)
+- `package.json` — dodać skrypt `"db:migrate": "prisma migrate dev"` i `"db:seed": "tsx scripts/seed.ts"`
+- `devDependencies` — dodać `tsx` do uruchamiania seed scriptu
+
+### Pliki do utworzenia
+
+| Plik | Co robi |
+|---|---|
+| `prisma/schema.prisma` | Schema bazy: modele Document, Chunk, Conversation, Message, RateLimit |
+| `prisma/migrations/` | Automatycznie generowane przez `prisma migrate dev` |
+| `src/lib/db.ts` | Singleton Prisma Client (globalny, bezpieczny w Next.js dev) |
+| `src/lib/chunker.ts` | Podział plików `.md` na chunki (~500–800 tokenów, overlap ~100) |
+| `scripts/seed.ts` | Czyta `content/**/*.md`, chunkuje, zapisuje do bazy (idempotentny) |
+
+### Schema bazy (Prisma)
+
+```
+Document   — id, title, category, filePath, createdAt
+           — relacja: chunks[]
+
+Chunk      — id, documentId, content, chunkIndex
+           — search_vector: Unsupported("tsvector")  ← FTS, aktualizowane triggerem SQL
+
+Conversation — id, sessionId, ip, createdAt
+             — relacja: messages[]
+
+Message    — id, conversationId, role, content, tokensUsed, createdAt
+
+RateLimit  — id, ip, requestDate, count
+           — unikalny indeks: (ip, requestDate)
+```
+
+### Trigger SQL (po migracji, przez `prisma.$executeRaw`)
+
+```sql
+-- Automatyczna aktualizacja search_vector przy INSERT/UPDATE na chunks
+CREATE TRIGGER chunks_search_vector_update
+BEFORE INSERT OR UPDATE ON chunks
+FOR EACH ROW EXECUTE FUNCTION
+tsvector_update_trigger(search_vector, 'pg_catalog.simple', content);
+```
+
+### Zadania
+
+- [ ] Zainstalować `prisma`, `@prisma/client`, `openai`, `tsx`
+- [ ] Skonfigurować `prisma/schema.prisma` z wszystkimi modelami
+- [ ] Uruchomić `prisma migrate dev --name initial` — wygenerować i zastosować migrację
+- [ ] Dodać trigger `tsvector` przez osobny plik migracji SQL
+- [ ] Utworzyć `src/lib/db.ts` — singleton Prisma Client
+- [ ] Utworzyć `src/lib/chunker.ts` — logika chunkingu z testami jednostkowymi (Vitest)
+- [ ] Utworzyć `scripts/seed.ts` — idempotentny seed (usuwa stare chunks dokumentu przed ponownym wstawieniem)
+- [ ] Dodać `postinstall`, `db:migrate`, `db:seed` do `package.json`
+- [ ] Uruchomić `npm run db:seed` i zweryfikować dane w bazie
+- [ ] `tsc --noEmit` + `eslint .` — zero błędów
+
+---
+
+## Faza 9 — API `/api/chat` (RAG pipeline)
+
+**Cel:** endpoint przyjmujący pytanie, szukający w bazie, wywołujący LLM, zwracający odpowiedź.
+
+### Nowe zmienne środowiskowe (już w `.env.example`)
+
+- `OVH_AI_ENDPOINT` — URL endpointu modelu
+- `OVH_AI_API_KEY` — klucz API OVH
+- `OVH_AI_MODEL` — nazwa modelu (np. `Meta-Llama-3.1-70B-Instruct`)
+- `DAILY_REQUEST_LIMIT` — dzienny limit zapytań per IP (domyślnie `20`)
+
+### Pliki do utworzenia
+
+| Plik | Co robi |
+|---|---|
+| `src/lib/prompts.ts` | System prompt — instruuje LLM jak odpowiadać na pytania o Mangetsu |
+| `src/lib/search.ts` | FTS helper — rozbija query na tokeny, zwraca top 6 chunków przez `$queryRaw` |
+| `src/app/api/chat/route.ts` | POST handler — cały pipeline RAG |
+
+### Pipeline w `POST /api/chat`
+
+```
+Body: { message: string, sessionId: string }
+
+1. Walidacja inputu
+2. Pobierz IP z nagłówka X-Forwarded-For
+3. Sprawdź rate limit (tabela RateLimit, pole requestDate = dzisiaj)
+   → jeśli count >= DAILY_REQUEST_LIMIT: return 429
+4. FTS search → top 6 chunków (search.ts)
+5. Zbuduj prompt: system + chunki jako kontekst
+6. Wywołaj OVH przez openai package (baseURL = OVH_AI_ENDPOINT)
+7. Upsert Conversation (sessionId + ip), zapisz 2 Messages (user + assistant)
+8. Upsert RateLimit — count += 1
+9. Zwróć: { reply, tokensUsed, requestsUsed }
+```
+
+### Zadania
+
+- [ ] Utworzyć `src/lib/prompts.ts` — system prompt po polsku
+- [ ] Utworzyć `src/lib/search.ts` — FTS przez `prisma.$queryRaw`
+- [ ] Utworzyć `src/app/api/chat/route.ts` — pełny pipeline
+- [ ] Przetestować endpoint przez `curl` / Postman
+- [ ] `tsc --noEmit` + `eslint .` — zero błędów
+
+---
+
+## Faza 10 — Integracja frontendu z API
+
+**Cel:** zastąpienie mocka prawdziwym API, licznik zapytań z bazy, obsługa błędów.
+
+### Pliki do zmiany
+
+| Plik | Co się zmienia |
+|---|---|
+| `src/components/chat/ChatView.tsx` | `fetch('/api/chat')` zamiast mock, obsługa błędów przez `notifyError()` |
+| `src/store/chatStore.ts` | `requestsUsed` aktualizowany z odpowiedzi API (nie tylko lokalnie) |
+
+### Zadania
+
+- [ ] Zastąpić mock w `ChatView` prawdziwym `fetch('/api/chat')`
+- [ ] Obsłużyć błędy (429 = limit, 500 = błąd serwera) przez `notifyError()`
+- [ ] Zaktualizować `requestsUsed` w `chatStore` z wartości zwróconej przez API
+- [ ] Sprawdzić działanie end-to-end: pytanie → odpowiedź z LLM → zapis w bazie
+- [ ] `tsc --noEmit` + `eslint .` — zero błędów
+
+---
+
 ## Decyzje — podjęte
 
 | # | Pytanie | Decyzja |
@@ -144,13 +281,17 @@ Każdy komunikat potrzebuje `id` (do śledzenia odrzuconych w localStorage), `ty
 | 1 | Renderowanie markdown | `react-markdown` — używane w docs panelu **i** w bąbelkach czatu (odpowiedzi AI) |
 | 2 | Nazwa koloru w Mantine | `mangetsu` |
 | 3 | Logo w topbarze | Tekst nieselektowalny (`user-select: none`) |
+| 4 | Wyszukiwanie chunków | PostgreSQL full-text search (tsvector) — FTS przez `prisma.$queryRaw` |
+| 5 | Odpowiedź API | Jednorazowa (nie streaming) — prostsze, typing indicator zostaje |
+| 6 | Rate limiting | Per IP z nagłówka `X-Forwarded-For` |
+| 7 | ORM | Prisma — typy z automatu, migracje przez CLI |
 
 ---
 
 ## Kolejność implementacji (rekomendowana)
 
 ```
-Faza 1 → Faza 2 → Faza 3 → Faza 4 → Faza 5 → Faza 6 → Faza 7
+Faza 1 → Faza 2 → Faza 3 → Faza 4 → Faza 5 → Faza 6 → Faza 7 → Faza 8 → Faza 9 → Faza 10
 ```
 
 Każda faza jest niezależna — można zatwierdzać i commitować po kolei.

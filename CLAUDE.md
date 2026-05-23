@@ -84,9 +84,12 @@ Po zakończeniu implementacji:
 ### Backend
 
 - **Next.js Route Handlers** — `/src/app/api/`
-- **PostgreSQL** — przez `postgres` (npm package `postgres` / `node-postgres`)
-- Brak ORM — surowe SQL z typowanymi query helperami
-- Migracje: proste pliki `.sql` uruchamiane ręcznie lub przez seed script
+- **PostgreSQL** — przez **Prisma ORM**
+  - Schema: `prisma/schema.prisma`
+  - Migracje: `prisma migrate dev` (dev), `prisma migrate deploy` (prod)
+  - Klient: singleton w `src/lib/db.ts` (ważne w Next.js — jeden instancja globalnie)
+  - Kolumna `search_vector` (tsvector) jako `Unsupported("tsvector")` — zapytania FTS przez `prisma.$queryRaw`
+- `postinstall` script w `package.json`: `prisma generate` — wymagane dla Coolify/Nixpacks
 
 ### Historia konwersacji
 
