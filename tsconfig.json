@@ -19,7 +19,19 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "app/*": ["./src/app/*"],
+      "chat": ["./src/components/chat/index"],
+      "chat/*": ["./src/components/chat/*"],
+      "layout": ["./src/components/layout/index"],
+      "layout/*": ["./src/components/layout/*"],
+      "notices": ["./src/components/notices/index"],
+      "notices/*": ["./src/components/notices/*"],
+      "data/*": ["./src/data/*"],
+      "lib": ["./src/lib/index"],
+      "lib/*": ["./src/lib/*"],
+      "store": ["./src/store/index"],
+      "store/*": ["./src/store/*"]
     }
   },
   "include": [
