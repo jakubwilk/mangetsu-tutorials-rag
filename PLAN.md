@@ -128,12 +128,12 @@ Każdy komunikat potrzebuje `id` (do śledzenia odrzuconych w localStorage), `ty
 
 ### Zadania
 
-- [ ] Podłączyć `session_id` (UUID z `localStorage`) do stanu czatu
-- [ ] Podłączyć licznik zapytań do realnych danych (mock na start: `0/10`)
-- [ ] Podłączyć listę historii czatów (z `localStorage` na start)
-- [ ] Testy TypeScript — `tsc --noEmit`, zero błędów
-- [ ] Usunąć wszystkie `console.log`, dead code, placeholder images Next.js
-- [ ] Sprawdzić czy ESLint nie zgłasza błędów
+- [x] Podłączyć `session_id` (UUID z `localStorage`) do stanu czatu
+- [x] Podłączyć licznik zapytań do realnych danych (mock na start: `0/10`)
+- [x] Podłączyć listę historii czatów (z `localStorage` na start)
+- [x] Testy TypeScript — `tsc --noEmit`, zero błędów
+- [x] Usunąć wszystkie `console.log`, dead code, placeholder images Next.js
+- [x] Sprawdzić czy ESLint nie zgłasza błędów
 
 ---
 
