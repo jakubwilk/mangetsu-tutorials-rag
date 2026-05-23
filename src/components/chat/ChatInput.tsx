@@ -1,30 +1,12 @@
 'use client'
 
 import { ActionIcon, Box, Text, Textarea } from '@mantine/core'
+import { IconSend2 } from '@tabler/icons-react'
 import { useState } from 'react'
 
 interface ChatInputProps {
   onSend: (text: string) => void
   disabled: boolean
-}
-
-function SendIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width={18}
-      height={18}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <line x1="22" y1="2" x2="11" y2="13" />
-      <polygon points="22 2 15 22 11 13 2 9 22 2" />
-    </svg>
-  )
 }
 
 export default function ChatInput({ onSend, disabled }: ChatInputProps) {
@@ -76,7 +58,7 @@ export default function ChatInput({ onSend, disabled }: ChatInputProps) {
           className="shrink-0"
           aria-label="Wyślij wiadomość"
         >
-          <SendIcon />
+          <IconSend2 size={18} />
         </ActionIcon>
       </Box>
       <Text size="xs" c="dimmed" ta="center" mt="xs">

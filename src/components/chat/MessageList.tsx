@@ -1,6 +1,7 @@
 'use client'
 
 import { Box, Center, ScrollArea, Text } from '@mantine/core'
+import { IconBook2 } from '@tabler/icons-react'
 import { useEffect, useRef, useState } from 'react'
 
 import loadingMessages from '@/data/loading-messages.json'
@@ -11,30 +12,6 @@ import MessageBubble from './MessageBubble'
 interface MessageListProps {
   messages: Message[]
   isLoading: boolean
-}
-
-function BookIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width={15}
-      height={15}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="shrink-0"
-      style={{
-        color: 'var(--mantine-color-mangetsu-5)',
-        animation: 'icon-pulse 1.6s ease-in-out infinite',
-      }}
-    >
-      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-    </svg>
-  )
 }
 
 function TypingIndicator() {
@@ -52,7 +29,14 @@ function TypingIndicator() {
             'var(--mantine-radius-lg) var(--mantine-radius-lg) var(--mantine-radius-lg) var(--mantine-radius-xs)',
         }}
       >
-        <BookIcon />
+        <IconBook2
+          size={15}
+          className="shrink-0"
+          style={{
+            color: 'var(--mantine-color-mangetsu-5)',
+            animation: 'icon-pulse 1.6s ease-in-out infinite',
+          }}
+        />
         <Text size="sm" c="dimmed" className="italic">
           {text}
         </Text>

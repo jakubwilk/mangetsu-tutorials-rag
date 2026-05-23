@@ -1,8 +1,13 @@
 import { Box, Button, Group, Text } from '@mantine/core'
 
+import { loadNotices } from '@/app/notices-loader'
+import NoticesPopover from '@/components/notices/NoticesPopover'
+
 const FORUM_URL = process.env.NEXT_PUBLIC_FORUM_URL ?? '#'
 
-export default function Topbar() {
+export default async function Topbar() {
+  const notices = await loadNotices()
+
   return (
     <Box
       component="header"
@@ -23,17 +28,20 @@ export default function Topbar() {
           </span>
           <span className="text-[0.85rem] font-bold tracking-wider text-white"> RAG</span>
         </Text>
-        <Button
-          component="a"
-          href={FORUM_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          variant="light"
-          color="mangetsu"
-          size="sm"
-        >
-          Przejdź na forum ↗
-        </Button>
+        <Group gap="xs">
+          <NoticesPopover notices={notices} />
+          <Button
+            component="a"
+            href={FORUM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="light"
+            color="mangetsu"
+            size="sm"
+          >
+            Przejdź na forum ↗
+          </Button>
+        </Group>
       </Group>
     </Box>
   )
