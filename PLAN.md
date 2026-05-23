@@ -101,14 +101,14 @@ Każdy komunikat potrzebuje `id` (do śledzenia odrzuconych w localStorage), `ty
 
 ### Zadania
 
-- [ ] Utworzyć `src/components/notices/NoticesPopover.tsx` — Client Component
+- [x] Utworzyć `src/components/notices/NoticesPopover.tsx` — Client Component
   - Czyta notices przez props (przekazane z Server Component który czyta `docs/notices.json`)
   - Ikona dzwonka (lub info) w topbarze z badge (liczba aktywnych)
   - Popover z listą aktywnych komunikatów
   - Każdy komunikat: przycisk X do odrzucenia (zapisuje id do `localStorage`)
   - Przycisk „Pokaż wszystkie" — czyści dismissed list z `localStorage`
-- [ ] Utworzyć `src/app/notices-loader.ts` (Server Component helper) — czyta i parsuje `docs/notices.json`
-- [ ] Integracja z `Topbar.tsx` — notices icon po prawej, obok przycisku forum
+- [x] Utworzyć `src/app/notices-loader.ts` (Server Component helper) — czyta i parsuje `docs/notices.json`
+- [x] Integracja z `Topbar.tsx` — notices icon po prawej, obok przycisku forum
 
 ---
 
