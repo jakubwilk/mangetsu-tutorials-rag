@@ -84,7 +84,7 @@ export default function RootLayout({
 
       <body className="h-full overflow-hidden">
         <MantineProvider theme={theme} forceColorScheme="dark">
-          <Notifications position="top-center" />
+          <Notifications position="top-center" limit={3} autoClose={10000} />
           {children}
         </MantineProvider>
       </body>
