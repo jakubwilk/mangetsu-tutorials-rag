@@ -110,8 +110,8 @@ Po zakończeniu implementacji:
 
 ### Infrastruktura
 
-- **docker-compose.yml** — lokalny development (PostgreSQL)
 - **Coolify + Nixpacks** — deployment na OVH VPS z GitHub repo, bez Dockerfile
+- Baza danych dev i prod: PostgreSQL w Coolify (osobne serwisy)
 - Zmienne środowiskowe: `.env.local` (dev), Coolify panel (prod)
 
 ---
@@ -144,7 +144,7 @@ Po zakończeniu implementacji:
 
 - Nie commituj `.env` ani `.env.local` — tylko `.env.example` z placeholderami
 - Nie hardcoduj URL-i, kluczy API ani portów w kodzie
-- Nie dodawaj Dockerfile — deployment idzie przez Coolify + Nixpacks z GitHub repo
+- Nie dodawaj Dockerfile ani docker-compose — deployment idzie przez Coolify + Nixpacks z GitHub repo, baza w Coolify
 
 ---
 
