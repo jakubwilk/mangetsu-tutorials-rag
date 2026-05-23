@@ -1,10 +1,7 @@
+import { ChatView } from 'chat'
 import { readFile } from 'fs/promises'
+import { AppLayout, ChatSidebar, DocsPanel } from 'layout'
 import path from 'path'
-
-import ChatView from '@/components/chat/ChatView'
-import AppLayout from '@/components/layout/AppLayout'
-import ChatSidebar from '@/components/layout/ChatSidebar'
-import DocsPanel from '@/components/layout/DocsPanel'
 
 export default async function Home() {
   const docsContent = await readFile(

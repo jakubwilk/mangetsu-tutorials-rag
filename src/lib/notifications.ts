@@ -1,5 +1,5 @@
-import { IconAlertTriangle, IconInfoCircle, IconXboxX } from '@tabler/icons-react'
 import { notifications } from '@mantine/notifications'
+import { IconAlertTriangle, IconInfoCircle, IconXboxX } from '@tabler/icons-react'
 import { createElement } from 'react'
 
 const sharedStyles = {

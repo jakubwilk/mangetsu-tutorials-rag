@@ -1,7 +1,6 @@
 import { Box, Button, Group, Text } from '@mantine/core'
-
-import { loadNotices } from '@/app/notices-loader'
-import NoticesPopover from '@/components/notices/NoticesPopover'
+import { loadNotices } from 'app/notices-loader'
+import { NoticesPopover } from 'notices'
 
 const FORUM_URL = process.env.NEXT_PUBLIC_FORUM_URL ?? '#'
 

@@ -2,9 +2,8 @@
 
 import { Box, Center, ScrollArea, Text } from '@mantine/core'
 import { IconBook2 } from '@tabler/icons-react'
+import loadingMessages from 'data/loading-messages.json'
 import { useEffect, useRef, useState } from 'react'
-
-import loadingMessages from '@/data/loading-messages.json'
 
 import type { Message } from './ChatView'
 import MessageBubble from './MessageBubble'
