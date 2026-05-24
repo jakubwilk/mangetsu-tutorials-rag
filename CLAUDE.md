@@ -72,6 +72,21 @@ Po zakończeniu implementacji:
   - Nie duplikuj styli które Mantine już obsługuje (kolory, cienie, radiusy)
   - Tailwind służy jako uzupełnienie, nie zamiennik Mantine
 
+### Struktura komponentów React
+
+Każdy komponent Client Component (`'use client'`) musi zachowywać tę kolejność:
+
+1. **Hooki zewnętrzne** — `useSyncExternalStore`, custom hooks, context hooks
+2. **Deklaracje stanu** — `useState`, `useReducer`
+3. **Zmienne pochodne** — `useMemo` lub zwykłe `const` (derived state, filtered lists itp.)
+4. **Funkcje** — `useCallback` lub zwykłe arrow functions (handlery, helpers)
+5. **`useEffect`** — zawsze tuż przed `return`
+6. **`return`** — JSX
+
+Wyjątek: jeśli hook wymaga zmiennej lub elementu stanu (np. `useRef` zainicjowany wartością ze stanu), może pojawić się bezpośrednio po swojej zależności.
+
+---
+
 ### Next.js 16 — ważne breaking changes
 
 - `cookies()`, `headers()`, `params`, `searchParams` — **zawsze `await`uj**, synchroniczny dostęp usunięty
