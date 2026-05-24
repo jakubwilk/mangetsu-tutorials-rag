@@ -266,11 +266,11 @@ Body: { message: string, sessionId: string }
 
 ### Zadania
 
-- [ ] Zastąpić mock w `ChatView` prawdziwym `fetch('/api/chat')`
-- [ ] Obsłużyć błędy (429 = limit, 500 = błąd serwera) przez `notifyError()`
-- [ ] Zaktualizować `requestsUsed` w `chatStore` z wartości zwróconej przez API
+- [x] Zastąpić mock w `ChatView` prawdziwym `fetch('/api/chat')`
+- [x] Obsłużyć błędy (429 = limit, 500 = błąd serwera) przez `notifyError()`
+- [x] Zaktualizować `requestsUsed` w `chatStore` z wartości zwróconej przez API
 - [ ] Sprawdzić działanie end-to-end: pytanie → odpowiedź z LLM → zapis w bazie
-- [ ] `tsc --noEmit` + `eslint .` — zero błędów
+- [x] `tsc --noEmit` + `eslint .` — zero błędów
 
 ---
 
