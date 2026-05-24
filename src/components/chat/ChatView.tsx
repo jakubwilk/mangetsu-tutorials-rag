@@ -25,28 +25,6 @@ export default function ChatView() {
   const [isValidating, setIsValidating] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
 
-  useEffect(() => {
-    chatStore.init()
-
-    const sessionsWithMessages = chatStore.getSnapshot().sessions.filter(
-      (s) => s.messages.length > 0
-    )
-    const ids = sessionsWithMessages.map((s) => s.id).join(',')
-
-    Promise.all([
-      ids
-        ? fetch(`/api/sessions?ids=${ids}`).then<{ valid: string[] }>((r) => r.json())
-        : Promise.resolve({ valid: [] }),
-      fetch('/api/rate-limit').then<{ requestsUsed: number }>((r) => r.json()),
-    ])
-      .then(([{ valid }, { requestsUsed }]) => {
-        if (ids) chatStore.pruneInvalidSessions(valid)
-        chatStore.setRequestsUsed(requestsUsed)
-      })
-      .catch(() => {})
-      .finally(() => setIsValidating(false))
-  }, [])
-
   const activeSession = sessions.find((s) => s.id === activeSessionId)
   const messages = activeSession?.messages ?? []
 
@@ -99,6 +77,28 @@ export default function ChatView() {
     },
     [isLoading, requestsUsed, activeSessionId]
   )
+
+  useEffect(() => {
+    chatStore.init()
+
+    const sessionsWithMessages = chatStore.getSnapshot().sessions.filter(
+      (s) => s.messages.length > 0
+    )
+    const ids = sessionsWithMessages.map((s) => s.id).join(',')
+
+    Promise.all([
+      ids
+        ? fetch(`/api/sessions?ids=${ids}`).then<{ valid: string[] }>((r) => r.json())
+        : Promise.resolve({ valid: [] }),
+      fetch('/api/rate-limit').then<{ requestsUsed: number }>((r) => r.json()),
+    ])
+      .then(([{ valid }, { requestsUsed }]) => {
+        if (ids) chatStore.pruneInvalidSessions(valid)
+        chatStore.setRequestsUsed(requestsUsed)
+      })
+      .catch(() => {})
+      .finally(() => setIsValidating(false))
+  }, [])
 
   if (isValidating) {
     return (

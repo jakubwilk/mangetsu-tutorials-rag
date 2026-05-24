@@ -32,12 +32,12 @@ export default function NoticesPopover({ notices }: NoticesPopoverProps) {
   )
   const [opened, setOpened] = useState(false)
 
+  const active = notices.filter((n) => !dismissed.includes(n.id))
+  const count = active.length
+
   useEffect(() => {
     dismissedNoticesStore.init()
   }, [])
-
-  const active = notices.filter((n) => !dismissed.includes(n.id))
-  const count = active.length
 
   return (
     <Popover
