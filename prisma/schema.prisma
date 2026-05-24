@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Document {
+  id        String   @id @default(uuid())
+  title     String
+  category  String
+  filePath  String   @unique
+  createdAt DateTime @default(now())
+  chunks    Chunk[]
+
+  @@map("documents")
+}
+
+model Chunk {
+  id           String                   @id @default(uuid())
+  documentId   String
+  content      String
+  chunkIndex   Int
+  searchVector Unsupported("tsvector")? @map("search_vector")
+  document     Document                 @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@map("chunks")
+}
+
+model Conversation {
+  id        String    @id @default(uuid())
+  sessionId String
+  ip        String
+  createdAt DateTime  @default(now())
+  messages  Message[]
+
+  @@map("conversations")
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  conversationId String
+  role           String
+  content        String
+  tokensUsed     Int          @default(0)
+  createdAt      DateTime     @default(now())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+model RateLimit {
+  id          String   @id @default(uuid())
+  ip          String
+  requestDate DateTime @db.Date
+  count       Int      @default(0)
+
+  @@unique([ip, requestDate])
+  @@map("rate_limits")
+}
