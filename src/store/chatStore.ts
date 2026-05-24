@@ -23,11 +23,13 @@ interface StoreSnapshot {
 
 const REQUEST_LIMIT = 10
 
-let snapshot: StoreSnapshot = {
+const SERVER_SNAPSHOT: StoreSnapshot = {
   sessions: [],
   activeSessionId: '',
   requestsUsed: 0,
 }
+
+let snapshot: StoreSnapshot = SERVER_SNAPSHOT
 
 const listeners = new Set<() => void>()
 
@@ -79,7 +81,7 @@ export const chatStore = {
   },
 
   getServerSnapshot(): StoreSnapshot {
-    return { sessions: [], activeSessionId: '', requestsUsed: 0 }
+    return SERVER_SNAPSHOT
   },
 
   init() {
@@ -129,6 +131,12 @@ export const chatStore = {
 
   incrementRequests() {
     const count = snapshot.requestsUsed + 1
+    snapshot = { ...snapshot, requestsUsed: count }
+    persistRequests(count)
+    notify()
+  },
+
+  setRequestsUsed(count: number) {
     snapshot = { ...snapshot, requestsUsed: count }
     persistRequests(count)
     notify()

@@ -3,6 +3,7 @@
 import { Box } from '@mantine/core'
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react'
 
+import { notifyError } from '@/lib/notifications'
 import { chatStore } from '@/store'
 
 import ChatInput from './ChatInput'
@@ -13,12 +14,6 @@ export interface Message {
   role: 'user' | 'assistant'
   content: string
 }
-
-const MOCK_RESPONSES = [
-  'To jest przykładowa odpowiedź asystenta. W pełnej wersji odpowiedź będzie generowana przez model językowy na podstawie poradników z forum Mangetsu.',
-  'Znalazłem kilka pasujących fragmentów w bazie wiedzy. Oto co mogę Ci powiedzieć na ten temat — na razie to tylko **mock**, docelowo odpowiedź przyjdzie z API `/api/chat`.',
-  'Niestety nie znalazłem informacji na ten temat w dostępnych poradnikach. Spróbuj przeformułować pytanie lub sprawdź sekcję **Poradniki dla początkujących**.',
-]
 
 export default function ChatView() {
   const { sessions, activeSessionId, requestsUsed } = useSyncExternalStore(
@@ -47,21 +42,43 @@ export default function ChatView() {
       }
 
       chatStore.addMessage(userMessage)
-      chatStore.incrementRequests()
       setIsLoading(true)
 
-      await new Promise<void>((resolve) => setTimeout(resolve, 1200))
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text.trim(), sessionId: activeSessionId }),
+        })
 
-      const assistantMessage: Message = {
-        id: crypto.randomUUID(),
-        role: 'assistant',
-        content: MOCK_RESPONSES[Math.floor(Math.random() * MOCK_RESPONSES.length)],
+        const data: { reply?: string; requestsUsed?: number; error?: string } =
+          await response.json()
+
+        if (!response.ok) {
+          if (response.status === 429) {
+            notifyError(data.error ?? 'Przekroczono dzienny limit zapytań. Spróbuj ponownie jutro.')
+            chatStore.setRequestsUsed(chatStore.requestLimit)
+          } else {
+            notifyError(data.error ?? 'Błąd serwera. Spróbuj ponownie.')
+          }
+          return
+        }
+
+        const assistantMessage: Message = {
+          id: crypto.randomUUID(),
+          role: 'assistant',
+          content: data.reply ?? '',
+        }
+
+        chatStore.addMessage(assistantMessage)
+        chatStore.setRequestsUsed(data.requestsUsed ?? requestsUsed)
+      } catch {
+        notifyError('Błąd połączenia z serwerem. Sprawdź swoje połączenie internetowe.')
+      } finally {
+        setIsLoading(false)
       }
-
-      chatStore.addMessage(assistantMessage)
-      setIsLoading(false)
     },
-    [isLoading, requestsUsed]
+    [isLoading, requestsUsed, activeSessionId]
   )
 
   return (
