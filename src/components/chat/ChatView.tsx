@@ -1,6 +1,6 @@
 'use client'
 
-import { Box } from '@mantine/core'
+import { Box, Center, Loader } from '@mantine/core'
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react'
 
 import { notifyError } from '@/lib/notifications'
@@ -22,11 +22,30 @@ export default function ChatView() {
     chatStore.getServerSnapshot
   )
 
+  const [isValidating, setIsValidating] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
+
   useEffect(() => {
     chatStore.init()
-  }, [])
 
-  const [isLoading, setIsLoading] = useState(false)
+    const sessionsWithMessages = chatStore.getSnapshot().sessions.filter(
+      (s) => s.messages.length > 0
+    )
+    const ids = sessionsWithMessages.map((s) => s.id).join(',')
+
+    Promise.all([
+      ids
+        ? fetch(`/api/sessions?ids=${ids}`).then<{ valid: string[] }>((r) => r.json())
+        : Promise.resolve({ valid: [] }),
+      fetch('/api/rate-limit').then<{ requestsUsed: number }>((r) => r.json()),
+    ])
+      .then(([{ valid }, { requestsUsed }]) => {
+        if (ids) chatStore.pruneInvalidSessions(valid)
+        chatStore.setRequestsUsed(requestsUsed)
+      })
+      .catch(() => {})
+      .finally(() => setIsValidating(false))
+  }, [])
 
   const activeSession = sessions.find((s) => s.id === activeSessionId)
   const messages = activeSession?.messages ?? []
@@ -80,6 +99,14 @@ export default function ChatView() {
     },
     [isLoading, requestsUsed, activeSessionId]
   )
+
+  if (isValidating) {
+    return (
+      <Center className="h-full">
+        <Loader size="sm" />
+      </Center>
+    )
+  }
 
   return (
     <Box className="flex flex-col h-full">

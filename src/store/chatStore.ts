@@ -146,6 +146,30 @@ export const chatStore = {
     return snapshot.sessions.find((s) => s.id === snapshot.activeSessionId)
   },
 
+  pruneInvalidSessions(validIds: string[]) {
+    const validSet = new Set(validIds)
+    const sessions = snapshot.sessions.filter(
+      (s) => s.messages.length === 0 || validSet.has(s.id)
+    )
+
+    let { activeSessionId } = snapshot
+    if (!sessions.find((s) => s.id === activeSessionId)) {
+      const existing = sessions[0]
+      if (existing) {
+        activeSessionId = existing.id
+      } else {
+        const session = createSession()
+        sessions.push(session)
+        activeSessionId = session.id
+      }
+      persistActiveId(activeSessionId)
+    }
+
+    snapshot = { ...snapshot, sessions, activeSessionId }
+    persistSessions(sessions)
+    notify()
+  },
+
   get requestLimit() {
     return REQUEST_LIMIT
   },

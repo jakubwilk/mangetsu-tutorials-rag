@@ -48,8 +48,38 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const chunks = await searchChunks(message.trim());
-  const systemPrompt = buildSystemPrompt(chunks);
+  const STAT_ADVANCEMENT_PATTERN =
+    /zwi[eę]kszy[ćc]|ulepsz|awanso|wykupi[ćc]|rozwin|podbij|podnie[sś][ćc]|rang[aąię]|poziom|statystyk[aąię]/i;
+
+  const searchQuery = message.trim();
+  const needsCostContext = STAT_ADVANCEMENT_PATTERN.test(searchQuery);
+
+  const [chunks, costChunks, existingConversation] = await Promise.all([
+    searchChunks(searchQuery),
+    needsCostContext ? searchChunks("koszt PD sklep wykupienie statystyki", 2) : Promise.resolve([]),
+    db.conversation.findFirst({
+      where: { sessionId },
+      orderBy: { createdAt: "desc" },
+      include: {
+        messages: {
+          orderBy: { createdAt: "desc" },
+          take: 6,
+        },
+      },
+    }),
+  ]);
+
+  const seen = new Set(chunks.map((c) => c.id));
+  const merged = [
+    ...chunks,
+    ...costChunks.filter((c) => !seen.has(c.id)),
+  ];
+
+  const systemPrompt = buildSystemPrompt(merged);
+
+  const history = (existingConversation?.messages ?? [])
+    .reverse()
+    .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
 
   let reply: string;
   let tokensUsed: number;
@@ -59,6 +89,7 @@ export async function POST(request: NextRequest) {
       model: process.env.OVH_AI_MODEL ?? "Meta-Llama-3.1-70B-Instruct",
       messages: [
         { role: "system", content: systemPrompt },
+        ...history,
         { role: "user", content: message.trim() },
       ],
       temperature: 0.7,
@@ -74,11 +105,6 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-
-  const existingConversation = await db.conversation.findFirst({
-    where: { sessionId },
-    orderBy: { createdAt: "desc" },
-  });
 
   const conversationId =
     existingConversation?.id ??

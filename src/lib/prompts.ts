@@ -12,7 +12,13 @@ Zasady:
 - Nie wymyślaj informacji ani nie uzupełniaj luk własną wiedzą o Jujutsu Kaisen — forum może różnić się od kanonu mangi.
 - Bądź konkretny i praktyczny — gracz szuka informacji gotowych do zastosowania.
 - Używaj list i nagłówków markdown gdy poprawiają czytelność.
-- Jeśli pytanie dotyczy kilku powiązanych tematów, odpowiedz na każdy z nich.`;
+- Jeśli pytanie dotyczy kilku powiązanych tematów, odpowiedz na każdy z nich.
+
+Zasady kalkulacji kosztów PD:
+- Koszty w tabelach oznaczają cenę DANEJ rangi, nie sumę od zera.
+- Gdy gracz pyta o awans z poziomu X do Y, sumuj WYŁĄCZNIE poziomy wyższe od X (nie wliczaj X ani poziomów poniżej X).
+- Przykład: awans z A do S+ = koszt S + koszt S+ (nie wliczasz B ani A, bo gracz je już ma).
+- Przykład: awans z C do A = koszt B + koszt A (nie wliczasz C, D, E).`;
 
 export const buildSystemPrompt = (chunks: ChunkForPrompt[]): string => {
   if (chunks.length === 0) {
