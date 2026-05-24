@@ -245,11 +245,11 @@ Body: { message: string, sessionId: string }
 
 ### Zadania
 
-- [ ] Utworzyć `src/lib/prompts.ts` — system prompt po polsku
-- [ ] Utworzyć `src/lib/search.ts` — FTS przez `prisma.$queryRaw`
-- [ ] Utworzyć `src/app/api/chat/route.ts` — pełny pipeline
-- [ ] Przetestować endpoint przez `curl` / Postman
-- [ ] `tsc --noEmit` + `eslint .` — zero błędów
+- [x] Utworzyć `src/lib/prompts.ts` — system prompt po polsku
+- [x] Utworzyć `src/lib/search.ts` — FTS przez `prisma.$queryRaw`
+- [x] Utworzyć `src/app/api/chat/route.ts` — pełny pipeline
+- [x] Przetestować endpoint przez `curl` / Postman
+- [x] `tsc --noEmit` + `eslint .` — zero błędów
 
 ---
 
