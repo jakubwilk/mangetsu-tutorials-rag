@@ -194,16 +194,16 @@ tsvector_update_trigger(search_vector, 'pg_catalog.simple', content);
 
 ### Zadania
 
-- [ ] Zainstalować `prisma`, `@prisma/client`, `openai`, `tsx`
-- [ ] Skonfigurować `prisma/schema.prisma` z wszystkimi modelami
-- [ ] Uruchomić `prisma migrate dev --name initial` — wygenerować i zastosować migrację
-- [ ] Dodać trigger `tsvector` przez osobny plik migracji SQL
-- [ ] Utworzyć `src/lib/db.ts` — singleton Prisma Client
-- [ ] Utworzyć `src/lib/chunker.ts` — logika chunkingu z testami jednostkowymi (Vitest)
-- [ ] Utworzyć `scripts/seed.ts` — idempotentny seed (usuwa stare chunks dokumentu przed ponownym wstawieniem)
-- [ ] Dodać `postinstall`, `db:migrate`, `db:seed` do `package.json`
-- [ ] Uruchomić `npm run db:seed` i zweryfikować dane w bazie
-- [ ] `tsc --noEmit` + `eslint .` — zero błędów
+- [x] Zainstalować `prisma`, `@prisma/client`, `openai`, `tsx`
+- [x] Skonfigurować `prisma/schema.prisma` z wszystkimi modelami
+- [x] Uruchomić `prisma migrate dev --name initial` — wygenerować i zastosować migrację
+- [x] Dodać trigger `tsvector` przez osobny plik migracji SQL
+- [x] Utworzyć `src/lib/db.ts` — singleton Prisma Client
+- [x] Utworzyć `src/lib/chunker.ts` — logika chunkingu
+- [x] Utworzyć `scripts/seed.ts` — idempotentny seed (usuwa stare chunks dokumentu przed ponownym wstawieniem)
+- [x] Dodać `postinstall`, `db:migrate`, `db:seed` do `package.json`
+- [x] Uruchomić `npm run db:seed` i zweryfikować dane w bazie (20 docs, 118 chunks)
+- [x] `tsc --noEmit` + `eslint .` — zero błędów
 
 ---
 
