@@ -3,7 +3,7 @@
 import { Box, Text } from '@mantine/core'
 import ReactMarkdown from 'react-markdown'
 
-import type { Message } from './ChatView'
+import type { Message } from '../types'
 
 interface MessageBubbleProps {
   message: Message

@@ -1,10 +1,4 @@
-import type { Message } from '@/components/chat/ChatView'
-
-export interface ChatSession {
-  id: string
-  messages: Message[]
-  createdAt: number
-}
+import type { ChatSession, Message } from '../types'
 
 const SESSIONS_KEY = 'mangetsu:chat-sessions'
 const ACTIVE_KEY = 'mangetsu:active-session'

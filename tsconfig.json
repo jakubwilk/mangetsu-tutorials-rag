@@ -21,17 +21,18 @@
     "paths": {
       "@/*": ["./src/*"],
       "app/*": ["./src/app/*"],
-      "chat": ["./src/components/chat/index"],
-      "chat/*": ["./src/components/chat/*"],
-      "layout": ["./src/components/layout/index"],
-      "layout/*": ["./src/components/layout/*"],
-      "notices": ["./src/components/notices/index"],
-      "notices/*": ["./src/components/notices/*"],
-      "data/*": ["./src/data/*"],
+      "chat": ["./src/modules/chat/components/index"],
+      "chat/*": ["./src/modules/chat/components/*"],
+      "layout": ["./src/shared/components/index"],
+      "layout/*": ["./src/shared/components/*"],
+      "notices": ["./src/modules/notices/components/index"],
+      "notices/*": ["./src/modules/notices/components/*"],
+      "data/*": ["./src/shared/data/*"],
       "lib": ["./src/lib/index"],
       "lib/*": ["./src/lib/*"],
-      "store": ["./src/store/index"],
-      "store/*": ["./src/store/*"]
+      "modules/*": ["./src/modules/*"],
+      "store": ["./src/modules/chat/store/index"],
+      "store/*": ["./src/modules/chat/store/*"]
     }
   },
   "include": [

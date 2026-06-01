@@ -3,17 +3,12 @@
 import { Box, Center, Loader } from '@mantine/core'
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react'
 
-import { notifyError } from '@/lib/notifications'
-import { chatStore } from '@/store'
+import { notifyError } from '@/shared/utils/notifications'
 
+import { chatStore } from '../store'
+import type { Message } from '../types'
 import ChatInput from './ChatInput'
 import MessageList from './MessageList'
-
-export interface Message {
-  id: string
-  role: 'user' | 'assistant'
-  content: string
-}
 
 export default function ChatView() {
   const { sessions, activeSessionId, requestsUsed } = useSyncExternalStore(

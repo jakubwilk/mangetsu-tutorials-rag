@@ -11,9 +11,10 @@ import {
   Text,
 } from '@mantine/core'
 import { IconAlertTriangleFilled, IconBell, IconInfoCircleFilled } from '@tabler/icons-react'
-import type { Notice } from 'app/notices-loader'
 import { useEffect, useState, useSyncExternalStore } from 'react'
-import { dismissedNoticesStore } from 'store'
+
+import { dismissedNoticesStore } from '../store'
+import type { Notice } from '../types'
 
 const NOTICE_COLOR: Record<Notice['type'], string> = {
   info: 'rgba(106, 125, 173, 1)',

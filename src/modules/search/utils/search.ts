@@ -1,12 +1,6 @@
-import { db } from "./db";
+import { db } from "@/server/db";
 
-export interface SearchResult {
-  id: string;
-  content: string;
-  documentTitle: string;
-  category: string;
-  rank: number;
-}
+import type { SearchResult } from "../types";
 
 const tokenize = (query: string): string[] =>
   query
