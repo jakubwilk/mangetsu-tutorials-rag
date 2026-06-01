@@ -30,6 +30,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'Mangetsu — Asystent poradnikowy',
   description: 'Asystent AI dla forum Mangetsu oparty na bazie poradników RP',
+  robots: { index: false, follow: false },
 }
 
 const mangetsu: MantineColorsTuple = [
