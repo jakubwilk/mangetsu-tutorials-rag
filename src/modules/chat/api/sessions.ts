@@ -9,12 +9,16 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ valid: [] });
   }
 
-  const conversations = await db.conversation.findMany({
-    where: { sessionId: { in: ids } },
-    select: { sessionId: true },
-  });
+  try {
+    const conversations = await db.conversation.findMany({
+      where: { sessionId: { in: ids } },
+      select: { sessionId: true },
+    });
 
-  const valid = [...new Set(conversations.map((c) => c.sessionId))];
+    const valid = [...new Set(conversations.map((c) => c.sessionId))];
 
-  return NextResponse.json({ valid });
+    return NextResponse.json({ valid });
+  } catch {
+    return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
+  }
 }

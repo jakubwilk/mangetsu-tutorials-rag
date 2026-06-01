@@ -1,6 +1,7 @@
 'use client'
 
-import { Box, Center, Loader } from '@mantine/core'
+import { Alert, Box, Center, Loader } from '@mantine/core'
+import { IconServerOff } from '@tabler/icons-react'
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react'
 
 import { notifyError } from '@/shared/utils/notifications'
@@ -19,6 +20,7 @@ export default function ChatView() {
 
   const [isValidating, setIsValidating] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
+  const [isDbError, setIsDbError] = useState(false)
 
   const activeSession = sessions.find((s) => s.id === activeSessionId)
   const messages = activeSession?.messages ?? []
@@ -81,17 +83,23 @@ export default function ChatView() {
     )
     const ids = sessionsWithMessages.map((s) => s.id).join(',')
 
+    const fetchJson = async <T,>(url: string): Promise<T> => {
+      const r = await fetch(url)
+      if (!r.ok) throw new Error(`${r.status}`)
+      return r.json() as Promise<T>
+    }
+
     Promise.all([
       ids
-        ? fetch(`/api/sessions?ids=${ids}`).then<{ valid: string[] }>((r) => r.json())
+        ? fetchJson<{ valid: string[] }>(`/api/sessions?ids=${ids}`)
         : Promise.resolve({ valid: [] }),
-      fetch('/api/rate-limit').then<{ requestsUsed: number }>((r) => r.json()),
+      fetchJson<{ requestsUsed: number }>('/api/rate-limit'),
     ])
       .then(([{ valid }, { requestsUsed }]) => {
         if (ids) chatStore.pruneInvalidSessions(valid)
         chatStore.setRequestsUsed(requestsUsed)
       })
-      .catch(() => {})
+      .catch(() => setIsDbError(true))
       .finally(() => setIsValidating(false))
   }, [])
 
@@ -106,10 +114,22 @@ export default function ChatView() {
   return (
     <Box className="flex flex-col h-full">
       <MessageList messages={messages} isLoading={isLoading} />
-      <ChatInput
-        onSend={sendMessage}
-        disabled={isLoading || requestsUsed >= chatStore.requestLimit}
-      />
+      {isDbError ? (
+        <Alert
+          icon={<IconServerOff size={16} />}
+          color="red"
+          variant="light"
+          title="Serwis niedostępny"
+          className="m-4"
+        >
+          Nie można połączyć się z bazą danych. Czat jest tymczasowo wyłączony.
+        </Alert>
+      ) : (
+        <ChatInput
+          onSend={sendMessage}
+          disabled={isLoading || requestsUsed >= chatStore.requestLimit}
+        />
+      )}
     </Box>
   )
 }

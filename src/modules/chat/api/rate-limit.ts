@@ -11,9 +11,13 @@ export async function GET(request: NextRequest) {
     Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
   );
 
-  const rateLimit = await db.rateLimit.findUnique({
-    where: { ip_requestDate: { ip, requestDate } },
-  });
+  try {
+    const rateLimit = await db.rateLimit.findUnique({
+      where: { ip_requestDate: { ip, requestDate } },
+    });
 
-  return NextResponse.json({ requestsUsed: rateLimit?.count ?? 0 });
+    return NextResponse.json({ requestsUsed: rateLimit?.count ?? 0 });
+  } catch {
+    return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
+  }
 }
