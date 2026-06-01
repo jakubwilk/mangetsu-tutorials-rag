@@ -13,16 +13,21 @@ Zasady:
 - Bądź konkretny i praktyczny — gracz szuka informacji gotowych do zastosowania.
 - Używaj list i nagłówków markdown gdy poprawiają czytelność.
 - Jeśli pytanie dotyczy kilku powiązanych tematów, odpowiedz na każdy z nich.
+- Gdy kontekst zawiera tabelę z wartościami liczbowymi, opieraj odpowiedź wyłącznie na danych z tabeli — mają pierwszeństwo przed opisem tekstowym.
+- Rozróżniaj nagrody bazowe (gwarantowane po spełnieniu warunku minimalnego) od uznaniowych (przyznawanych przez sprawdzającego lub MG wedle własnego uznania) — nigdy nie podawaj nagrody uznaniowej jako wartości bazowej ani gwarantowanej.`;
 
+const PD_CALC_RULES = `
 Zasady kalkulacji kosztów PD:
 - Koszty w tabelach oznaczają cenę DANEJ rangi, nie sumę od zera.
 - Gdy gracz pyta o awans z poziomu X do Y, sumuj WYŁĄCZNIE poziomy wyższe od X (nie wliczaj X ani poziomów poniżej X).
 - Przykład: awans z A do S+ = koszt S + koszt S+ (nie wliczasz B ani A, bo gracz je już ma).
 - Przykład: awans z C do A = koszt B + koszt A (nie wliczasz C, D, E).`;
 
-export const buildSystemPrompt = (chunks: ChunkForPrompt[]): string => {
+export const buildSystemPrompt = (chunks: ChunkForPrompt[], needsCostContext = false): string => {
+  const base = needsCostContext ? `${SYSTEM_BASE}${PD_CALC_RULES}` : SYSTEM_BASE;
+
   if (chunks.length === 0) {
-    return `${SYSTEM_BASE}
+    return `${base}
 
 Nie znaleziono pasujących fragmentów w bazie wiedzy forum. Poinformuj gracza, że nie posiadasz informacji na ten temat i zasugeruj sprawdzenie poradników bezpośrednio na forum Mangetsu.`;
   }
@@ -31,7 +36,7 @@ Nie znaleziono pasujących fragmentów w bazie wiedzy forum. Poinformuj gracza, 
     .map((c) => `### ${c.documentTitle} (${c.category})\n\n${c.content}`)
     .join("\n\n---\n\n");
 
-  return `${SYSTEM_BASE}
+  return `${base}
 
 ## Kontekst z poradników Mangetsu
 

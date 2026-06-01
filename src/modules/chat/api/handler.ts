@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     ...costChunks.filter((c) => !seen.has(c.id)),
   ];
 
-  const systemPrompt = buildSystemPrompt(merged);
+  const systemPrompt = buildSystemPrompt(merged, needsCostContext);
 
   const history = (existingConversation?.messages ?? [])
     .reverse()
