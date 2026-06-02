@@ -1,8 +1,8 @@
 -- DropIndex
-DROP INDEX "chunks_content_trgm_idx";
+DROP INDEX IF EXISTS "chunks_content_trgm_idx";
 
--- DropIndex
-DROP INDEX "chunks_embedding_hnsw_idx";
+-- DropIndex (index was planned but never created — IF EXISTS prevents failure on fresh DB)
+DROP INDEX IF EXISTS "chunks_embedding_hnsw_idx";
 
 -- Resize embedding column from vector(1024) to vector(4096)
 ALTER TABLE chunks ALTER COLUMN embedding TYPE vector(4096);
