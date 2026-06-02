@@ -10,6 +10,9 @@ const DAILY_LIMIT = parseInt(process.env.DAILY_REQUEST_LIMIT ?? "20", 10);
 const STAT_ADVANCEMENT_PATTERN =
   /zwi[eę]kszy[ćc]|ulepsz|awanso|wykupi[ćc]|rozwin|podbij|podnie[sś][ćc]|rang[aąię]|poziom|statystyk[aąię]/i;
 
+const enc = new TextEncoder();
+const sseEvent = (data: object) => enc.encode(`data: ${JSON.stringify(data)}\n\n`);
+
 export async function POST(request: NextRequest) {
   let body: Record<string, unknown>;
   try {
@@ -27,13 +30,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Pole 'sessionId' jest wymagane." }, { status: 400 });
   }
 
-  const ip =
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
   const now = new Date();
-  const requestDate = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
-  );
+  const requestDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 
   const rateLimit = await db.rateLimit.findUnique({
     where: { ip_requestDate: { ip, requestDate } },
@@ -65,72 +64,76 @@ export async function POST(request: NextRequest) {
   ]);
 
   const seen = new Set(chunks.map((c) => c.id));
-  const merged = [
-    ...chunks,
-    ...costChunks.filter((c) => !seen.has(c.id)),
-  ];
-
+  const merged = [...chunks, ...costChunks.filter((c) => !seen.has(c.id))];
   const systemPrompt = buildSystemPrompt(merged, needsCostContext);
-
   const history = (existingConversation?.messages ?? [])
     .reverse()
     .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
 
-  let reply: string;
-  let tokensUsed: number;
+  const stream = new ReadableStream({
+    async start(controller) {
+      try {
+        const completion = await openai.chat.completions.create({
+          model: process.env.OVH_AI_MODEL ?? "Meta-Llama-3.1-70B-Instruct",
+          messages: [
+            { role: "system", content: systemPrompt },
+            ...history,
+            { role: "user", content: message.trim() },
+          ],
+          temperature: 0.7,
+          max_tokens: 1024,
+          stream: true,
+          stream_options: { include_usage: true },
+        });
 
-  try {
-    const completion = await openai.chat.completions.create({
-      model: process.env.OVH_AI_MODEL ?? "Meta-Llama-3.1-70B-Instruct",
-      messages: [
-        { role: "system", content: systemPrompt },
-        ...history,
-        { role: "user", content: message.trim() },
-      ],
-      temperature: 0.7,
-      max_tokens: 1024,
-    });
+        let fullContent = "";
+        let tokensUsed = 0;
 
-    reply = completion.choices[0]?.message?.content ?? "";
-    tokensUsed = completion.usage?.total_tokens ?? 0;
-  } catch (err) {
-    const detail = err instanceof Error ? err.message : "Nieznany błąd";
-    return NextResponse.json(
-      { error: `Błąd połączenia z modelem AI: ${detail}` },
-      { status: 500 }
-    );
-  }
+        for await (const chunk of completion) {
+          const content = chunk.choices[0]?.delta?.content ?? "";
+          if (content) {
+            fullContent += content;
+            controller.enqueue(sseEvent({ type: "token", content }));
+          }
+          if (chunk.usage) {
+            tokensUsed = chunk.usage.total_tokens;
+          }
+        }
 
-  const conversationId =
-    existingConversation?.id ??
-    (await db.conversation.create({ data: { sessionId, ip } })).id;
+        const conversationId =
+          existingConversation?.id ??
+          (await db.conversation.create({ data: { sessionId, ip } })).id;
 
-  await db.message.createMany({
-    data: [
-      {
-        conversationId,
-        role: "user",
-        content: message.trim(),
-        tokensUsed: 0,
-      },
-      {
-        conversationId,
-        role: "assistant",
-        content: reply,
-        tokensUsed,
-      },
-    ],
+        await db.message.createMany({
+          data: [
+            { conversationId, role: "user", content: message.trim(), tokensUsed: 0 },
+            { conversationId, role: "assistant", content: fullContent, tokensUsed },
+          ],
+        });
+
+        const updatedRateLimit = await db.rateLimit.upsert({
+          where: { ip_requestDate: { ip, requestDate } },
+          create: { ip, requestDate, count: 1 },
+          update: { count: { increment: 1 } },
+        });
+
+        controller.enqueue(sseEvent({ type: "done", requestsUsed: updatedRateLimit.count }));
+      } catch (err) {
+        const detail = err instanceof Error ? err.message : "Nieznany błąd";
+        controller.enqueue(
+          sseEvent({ type: "error", message: `Błąd połączenia z modelem AI: ${detail}` })
+        );
+      } finally {
+        controller.close();
+      }
+    },
   });
 
-  const updatedRateLimit = await db.rateLimit.upsert({
-    where: { ip_requestDate: { ip, requestDate } },
-    create: { ip, requestDate, count: 1 },
-    update: { count: { increment: 1 } },
-  });
-
-  return NextResponse.json({
-    reply,
-    tokensUsed,
-    requestsUsed: updatedRateLimit.count,
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      "Connection": "keep-alive",
+    },
   });
 }

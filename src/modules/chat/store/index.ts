@@ -123,6 +123,25 @@ export const chatStore = {
     notify()
   },
 
+  appendToMessage(id: string, delta: string) {
+    const sessions = snapshot.sessions.map((s) =>
+      s.id === snapshot.activeSessionId
+        ? {
+            ...s,
+            messages: s.messages.map((m) =>
+              m.id === id ? { ...m, content: m.content + delta } : m
+            ),
+          }
+        : s
+    )
+    snapshot = { ...snapshot, sessions }
+    notify()
+  },
+
+  persistCurrentState() {
+    persistSessions(snapshot.sessions)
+  },
+
   incrementRequests() {
     const count = snapshot.requestsUsed + 1
     snapshot = { ...snapshot, requestsUsed: count }

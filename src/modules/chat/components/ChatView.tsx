@@ -29,14 +29,10 @@ export default function ChatView() {
     async (text: string) => {
       if (!text.trim() || isLoading || requestsUsed >= chatStore.requestLimit) return
 
-      const userMessage: Message = {
-        id: crypto.randomUUID(),
-        role: 'user',
-        content: text.trim(),
-      }
-
-      chatStore.addMessage(userMessage)
+      chatStore.addMessage({ id: crypto.randomUUID(), role: 'user', content: text.trim() })
       setIsLoading(true)
+
+      let assistantMessageId: string | null = null
 
       try {
         const response = await fetch('/api/chat', {
@@ -45,10 +41,8 @@ export default function ChatView() {
           body: JSON.stringify({ message: text.trim(), sessionId: activeSessionId }),
         })
 
-        const data: { reply?: string; requestsUsed?: number; error?: string } =
-          await response.json()
-
-        if (!response.ok) {
+        if (!response.ok || !response.body) {
+          const data = await response.json().catch(() => ({})) as { error?: string }
           if (response.status === 429) {
             notifyError(data.error ?? 'Przekroczono dzienny limit zapytań. Spróbuj ponownie jutro.')
             chatStore.setRequestsUsed(chatStore.requestLimit)
@@ -58,14 +52,49 @@ export default function ChatView() {
           return
         }
 
-        const assistantMessage: Message = {
-          id: crypto.randomUUID(),
-          role: 'assistant',
-          content: data.reply ?? '',
+        const reader = response.body.getReader()
+        const decoder = new TextDecoder()
+        let buffer = ''
+
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+
+          buffer += decoder.decode(value, { stream: true })
+          const parts = buffer.split('\n\n')
+          buffer = parts.pop() ?? ''
+
+          for (const part of parts) {
+            if (!part.startsWith('data: ')) continue
+            let event: { type: string; content?: string; message?: string; requestsUsed?: number }
+            try {
+              event = JSON.parse(part.slice(6)) as typeof event
+            } catch {
+              continue
+            }
+
+            if (event.type === 'error') {
+              notifyError(event.message ?? 'Błąd serwera. Spróbuj ponownie.')
+              return
+            }
+
+            if (event.type === 'token' && event.content) {
+              if (!assistantMessageId) {
+                assistantMessageId = crypto.randomUUID()
+                chatStore.addMessage({ id: assistantMessageId, role: 'assistant', content: event.content })
+                setIsLoading(false)
+              } else {
+                chatStore.appendToMessage(assistantMessageId, event.content)
+              }
+            }
+
+            if (event.type === 'done') {
+              chatStore.setRequestsUsed(event.requestsUsed ?? requestsUsed)
+            }
+          }
         }
 
-        chatStore.addMessage(assistantMessage)
-        chatStore.setRequestsUsed(data.requestsUsed ?? requestsUsed)
+        chatStore.persistCurrentState()
       } catch {
         notifyError('Błąd połączenia z serwerem. Sprawdź swoje połączenie internetowe.')
       } finally {

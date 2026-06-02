@@ -112,8 +112,10 @@ const mergeHybrid = (
     scores.set(r.id, { result: r, score: 1 / (k + i + 1) });
   });
 
+  // Embeddings get 2× weight: for Polish RPG content, semantic similarity is more reliable
+  // than keyword matching — user query words rarely appear verbatim in document text.
   embedding.forEach((r, i) => {
-    const rrfScore = 1 / (k + i + 1);
+    const rrfScore = 2 / (k + i + 1);
     const entry = scores.get(r.id);
     if (entry) {
       entry.score += rrfScore;
@@ -128,33 +130,95 @@ const mergeHybrid = (
     .map(({ result }) => result);
 };
 
-export const searchChunks = async (query: string, limit = 3): Promise<SearchResult[]> => {
+// After the hybrid merge, append the next sequential chunks for documents that appear
+// more than once in the results. A repeated document means the whole document is relevant
+// (e.g. both chunk[0] and chunk[2] of Poziomy Klatw rank in the top 5 → expand to also
+// include chunk[1]). Single-appearance documents are tangential hits and are not expanded,
+// which avoids inflating the prompt with irrelevant adjacent chunks.
+const expandWithNextChunks = async (results: SearchResult[]): Promise<SearchResult[]> => {
+  if (results.length === 0) return results;
+
+  const resultIds = results.map((r) => r.id);
+
+  const meta = await db.chunk.findMany({
+    where: { id: { in: resultIds } },
+    select: { id: true, documentId: true, chunkIndex: true },
+  });
+
+  const docCount = new Map<string, number>();
+  for (const m of meta) docCount.set(m.documentId, (docCount.get(m.documentId) ?? 0) + 1);
+
+  const expandMeta = meta.filter((m) => (docCount.get(m.documentId) ?? 0) > 1);
+  if (expandMeta.length === 0) return results;
+
+  const nextChunks = await db.chunk.findMany({
+    where: {
+      OR: expandMeta.flatMap((m) => [
+        { documentId: m.documentId, chunkIndex: m.chunkIndex + 1 },
+        { documentId: m.documentId, chunkIndex: m.chunkIndex + 2 },
+      ]),
+      id: { notIn: resultIds },
+    },
+    select: {
+      id: true,
+      content: true,
+      document: { select: { title: true, category: true } },
+    },
+  });
+
+  const expanded: SearchResult[] = nextChunks.map((c) => ({
+    id: c.id,
+    content: c.content,
+    documentTitle: c.document.title,
+    category: c.document.category,
+    rank: 0,
+  }));
+
+  return [...results, ...expanded];
+};
+
+export const searchChunks = async (query: string, limit = 5): Promise<SearchResult[]> => {
   const tokens = tokenize(expandWithSynonyms(query));
   if (tokens.length === 0) return [];
 
-  const tsAndQuery = tokens.map((t) => `${t}:*`).join(" & ");
-  const tsOrQuery = tokens.map((t) => `${t}:*`).join(" | ");
+  // Fetch more candidates than needed so RRF can boost chunks appearing in multiple sources.
+  // Without this, a relevant chunk that ranks 4th in FTS and 1st in embedding never surfaces
+  // when both lists are independently capped at `limit`.
+  const fetchLimit = limit * 3;
 
-  // FTS (AND), trigram, and embedding run in parallel
+  // Strip 2-char Polish stopwords (na, do, ze, są…) from FTS tokens to reduce noise.
+  // These match nearly every chunk and push relevant results out of the top-N window.
+  // Fall back to all tokens when nothing longer is available (e.g. "co to PD").
+  const specificTokens = tokens.filter((t) => t.length > 2);
+  const ftsTokens = specificTokens.length > 0 ? specificTokens : tokens;
+
+  const tsAndQuery = ftsTokens.map((t) => `${t}:*`).join(" & ");
+  const tsOrQuery = ftsTokens.map((t) => `${t}:*`).join(" | ");
+
+  // FTS (AND), trigram, and embedding run in parallel.
+  // Embedding is capped at 8 s — OVH cold-start can be slow and FTS+context expansion
+  // provides an acceptable fallback.
+  const embeddingTimeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 8000));
   const [andResults, trigramResults, queryEmbedding] = await Promise.all([
-    runFts(tsAndQuery, limit).catch(() => [] as SearchResult[]),
-    runTrigram(query, limit),
-    embedText(query).catch(() => null),
+    runFts(tsAndQuery, fetchLimit).catch(() => [] as SearchResult[]),
+    runTrigram(query, fetchLimit),
+    Promise.race([embedText(query).catch(() => null), embeddingTimeout]),
   ]);
 
   // Resolve FTS results (OR fallback if AND returned too few)
   let ftsResults: SearchResult[];
-  if (andResults.length >= 3) {
-    ftsResults = mergeFts(andResults, trigramResults, limit);
+  if (andResults.length >= limit) {
+    ftsResults = mergeFts(andResults, trigramResults, fetchLimit);
   } else {
-    const orResults = await runFts(tsOrQuery, limit).catch(() => [] as SearchResult[]);
-    ftsResults = mergeFts(orResults, trigramResults, limit);
+    const orResults = await runFts(tsOrQuery, fetchLimit).catch(() => [] as SearchResult[]);
+    ftsResults = mergeFts(orResults, trigramResults, fetchLimit);
   }
 
-  // If embedding call failed, fall back to FTS-only
-  if (!queryEmbedding) return ftsResults;
+  // If embedding timed out or failed, fall back to FTS + context expansion
+  if (!queryEmbedding) return expandWithNextChunks(ftsResults.slice(0, limit));
 
-  const embeddingResults = await runEmbedding(queryEmbedding, limit).catch(() => [] as SearchResult[]);
+  const embeddingResults = await runEmbedding(queryEmbedding, fetchLimit).catch(() => [] as SearchResult[]);
 
-  return mergeHybrid(ftsResults, embeddingResults, limit);
+  const merged = mergeHybrid(ftsResults, embeddingResults, limit);
+  return expandWithNextChunks(merged);
 };
