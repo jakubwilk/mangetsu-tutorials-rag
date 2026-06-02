@@ -274,6 +274,69 @@ Body: { message: string, sessionId: string }
 
 ---
 
+## Faza 11 — Embedding search (hybrid RAG)
+
+**Cel:** zastąpienie czystego FTS+trigram wyszukiwaniem hybrydowym (FTS + cosine similarity na wektorach embeddingów), eliminując błędy wynikające z luk semantycznych (np. "rodzaje klątw" → "Poziomy Klątw").
+
+**Model:** `Qwen3-Embedding-8B` przez OVH AI Endpoints (multilingual, #1 MTEB, 32k ctx, wymiary 4096)
+
+**Infrastruktura:** pgvector 0.8.2 aktywny lokalnie (Docker `pgvector/pgvector:pg18`) i na produkcji (Coolify PGVector 18)
+
+### Nowe zmienne środowiskowe
+
+- `OVH_AI_EMBEDDING_ENDPOINT` — osobny URL endpointu dla modelu embeddingowego (OVH, format OpenAI-compatible)
+
+### Pliki do zmiany
+
+| Plik | Co się zmienia |
+|---|---|
+| `prisma/schema.prisma` | Dodać `embedding Unsupported("vector(4096)")` do modelu `Chunk` |
+| `prisma/migrations/` | Dwie migracje: `add_embeddings` (vector(1024) + pgvector ext) + `resize_embedding_4096` (ALTER TYPE) |
+| `.env.example` | Dodać `OVH_AI_EMBEDDING_ENDPOINT` |
+| `src/server/ai/embeddings.ts` | Nowy plik — klient embeddingów (OpenAI-compatible, `input` → `number[]`) |
+| `src/modules/search/utils/search.ts` | Hybrid search: FTS + `runEmbedding()` z cosine similarity, wyniki mergowane wagowo |
+| `scripts/seed.ts` | Generować embedding per chunk przy indeksowaniu, zapisywać do kolumny `embedding` |
+
+### Schema — zmiana w modelu Chunk
+
+```prisma
+model Chunk {
+  id           String                    @id @default(uuid())
+  documentId   String
+  content      String
+  chunkIndex   Int
+  searchVector Unsupported("tsvector")?  @map("search_vector")
+  embedding    Unsupported("vector(4096)")?
+  document     Document                  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  @@map("chunks")
+}
+```
+
+### Hybrid search — logika (RRF)
+
+```
+1. Równolegle: embedText(query) + runFts(AND) + runTrigram(query)
+2. Jeśli AND < 3 wyników → runFts(OR) jako fallback
+3. FTS+trigram mergowane wagowo (trigram jako secondary z wagą 0.5)
+4. Embedding search z cosine similarity
+5. Finalne połączenie FTS i embedding przez RRF (k=60) — bez normalizacji rang
+6. Zwróć top limit wyników
+```
+
+### Zadania
+
+- [x] Dodać `OVH_AI_EMBEDDING_ENDPOINT` do `.env.example` i `.env`
+- [x] Zaktualizować `prisma/schema.prisma` — kolumna `embedding vector(4096)` w `Chunk`
+- [x] Uruchomić migracje: `add-embeddings` + `resize-embedding-4096`
+- [x] Utworzyć `src/server/ai/embeddings.ts` — funkcja `embedText(text: string): Promise<number[]>`
+- [x] Zaktualizować `scripts/seed.ts` — generować embedding per chunk, zapisywać przez `$executeRaw`
+- [x] Zaktualizować `src/modules/search/utils/search.ts` — dodać `runEmbedding()` + hybrid merge (RRF)
+- [x] Uruchomić `npm run db:seed` — 118/118 chunków z embeddingami
+- [x] Przetestować zapytania semantyczne — "rodzaje klątw" → trafia w "Poziomy Klątw" ✓
+- [x] `tsc --noEmit` + `npm run build` — zero błędów
+
+---
+
 ## Decyzje — podjęte
 
 | # | Pytanie | Decyzja |
@@ -285,13 +348,16 @@ Body: { message: string, sessionId: string }
 | 5 | Odpowiedź API | Jednorazowa (nie streaming) — prostsze, typing indicator zostaje |
 | 6 | Rate limiting | Per IP z nagłówka `X-Forwarded-For` |
 | 7 | ORM | Prisma — typy z automatu, migracje przez CLI |
+| 8 | Embedding model | `Qwen3-Embedding-8B` (OVH AI Endpoints) — wymiary 4096 (domyślne) |
+| 9 | Hybrid search merge | RRF (Reciprocal Rank Fusion, k=60) — lepszy niż ważone summy bo nie wymaga normalizacji |
+| 10 | Brak HNSW index | pgvector HNSW max 2000 dims, mamy 4096 — sequential scan wystarczy przy ~100-200 chunkach |
 
 ---
 
 ## Kolejność implementacji (rekomendowana)
 
 ```
-Faza 1 → Faza 2 → Faza 3 → Faza 4 → Faza 5 → Faza 6 → Faza 7 → Faza 8 → Faza 9 → Faza 10
+Faza 1 → Faza 2 → Faza 3 → Faza 4 → Faza 5 → Faza 6 → Faza 7 → Faza 8 → Faza 9 → Faza 10 → Faza 11
 ```
 
 Każda faza jest niezależna — można zatwierdzać i commitować po kolei.
