@@ -1,3 +1,4 @@
+import { embedText } from "@/server/ai/embeddings";
 import { db } from "@/server/db";
 
 import type { SearchResult } from "../types";
@@ -59,7 +60,26 @@ const runTrigram = (query: string, limit: number) =>
     LIMIT ${limit}
   `;
 
-const merge = (primary: SearchResult[], secondary: SearchResult[], limit: number): SearchResult[] => {
+const runEmbedding = (embedding: number[], limit: number) => {
+  const vector = `[${embedding.join(",")}]`;
+  return db.$queryRaw<SearchResult[]>`
+    SELECT
+      c.id,
+      c.content,
+      d.title AS "documentTitle",
+      d.category,
+      (1 - (c.embedding <=> ${vector}::vector))::float AS rank
+    FROM chunks c
+    JOIN documents d ON c."documentId" = d.id
+    WHERE c.embedding IS NOT NULL
+    ORDER BY c.embedding <=> ${vector}::vector
+    LIMIT ${limit}
+  `;
+};
+
+// Combines two ranked result lists using Reciprocal Rank Fusion.
+// RRF avoids score normalization issues when merging FTS and embedding ranks.
+const mergeFts = (primary: SearchResult[], secondary: SearchResult[], limit: number): SearchResult[] => {
   const byId = new Map<string, SearchResult & { rank: number }>();
 
   for (const r of primary) {
@@ -80,6 +100,34 @@ const merge = (primary: SearchResult[], secondary: SearchResult[], limit: number
     .slice(0, limit);
 };
 
+const mergeHybrid = (
+  fts: SearchResult[],
+  embedding: SearchResult[],
+  limit: number
+): SearchResult[] => {
+  const k = 60;
+  const scores = new Map<string, { result: SearchResult; score: number }>();
+
+  fts.forEach((r, i) => {
+    scores.set(r.id, { result: r, score: 1 / (k + i + 1) });
+  });
+
+  embedding.forEach((r, i) => {
+    const rrfScore = 1 / (k + i + 1);
+    const entry = scores.get(r.id);
+    if (entry) {
+      entry.score += rrfScore;
+    } else {
+      scores.set(r.id, { result: r, score: rrfScore });
+    }
+  });
+
+  return [...scores.values()]
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit)
+    .map(({ result }) => result);
+};
+
 export const searchChunks = async (query: string, limit = 3): Promise<SearchResult[]> => {
   const tokens = tokenize(expandWithSynonyms(query));
   if (tokens.length === 0) return [];
@@ -87,15 +135,26 @@ export const searchChunks = async (query: string, limit = 3): Promise<SearchResu
   const tsAndQuery = tokens.map((t) => `${t}:*`).join(" & ");
   const tsOrQuery = tokens.map((t) => `${t}:*`).join(" | ");
 
-  const [andResults, trigramResults] = await Promise.all([
+  // FTS (AND), trigram, and embedding run in parallel
+  const [andResults, trigramResults, queryEmbedding] = await Promise.all([
     runFts(tsAndQuery, limit).catch(() => [] as SearchResult[]),
     runTrigram(query, limit),
+    embedText(query).catch(() => null),
   ]);
 
+  // Resolve FTS results (OR fallback if AND returned too few)
+  let ftsResults: SearchResult[];
   if (andResults.length >= 3) {
-    return merge(andResults, trigramResults, limit);
+    ftsResults = mergeFts(andResults, trigramResults, limit);
+  } else {
+    const orResults = await runFts(tsOrQuery, limit).catch(() => [] as SearchResult[]);
+    ftsResults = mergeFts(orResults, trigramResults, limit);
   }
 
-  const orResults = await runFts(tsOrQuery, limit).catch(() => [] as SearchResult[]);
-  return merge(orResults, trigramResults, limit);
+  // If embedding call failed, fall back to FTS-only
+  if (!queryEmbedding) return ftsResults;
+
+  const embeddingResults = await runEmbedding(queryEmbedding, limit).catch(() => [] as SearchResult[]);
+
+  return mergeHybrid(ftsResults, embeddingResults, limit);
 };

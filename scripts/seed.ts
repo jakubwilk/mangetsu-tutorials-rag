@@ -5,6 +5,7 @@ import * as fs from "fs";
 import * as path from "path";
 
 import { PrismaClient } from "../src/generated/prisma/client";
+import { embedText } from "../src/server/ai/embeddings";
 import { chunkText } from "../src/modules/search/utils/chunker";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
@@ -36,14 +37,23 @@ const seedDocument = async (filePath: string, category: string) => {
 
   await db.chunk.deleteMany({ where: { documentId: doc.id } });
 
+  const createdIds: string[] = [];
   for (const chunk of chunks) {
-    await db.chunk.create({
+    const created = await db.chunk.create({
       data: {
         documentId: doc.id,
         content: chunk.content,
         chunkIndex: chunk.chunkIndex,
       },
+      select: { id: true },
     });
+    createdIds.push(created.id);
+  }
+
+  for (let i = 0; i < chunks.length; i++) {
+    const embedding = await embedText(chunks[i]!.content);
+    const vector = `[${embedding.join(",")}]`;
+    await db.$executeRaw`UPDATE chunks SET embedding = ${vector}::vector WHERE id = ${createdIds[i]}`;
   }
 
   console.log(`  [${category}] ${title} — ${chunks.length} chunks`);
