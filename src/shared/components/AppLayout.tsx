@@ -36,9 +36,9 @@ export default function AppLayout({
   const [docsPanelOpened, { open: openDocsPanel, close: closeDocsPanel }] = useDisclosure(false)
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden">
+    <div className="flex h-full flex-col overflow-hidden">
       {topbar}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex min-h-0 flex-1 overflow-hidden">
         <div className="hidden md:contents">{sidebar}</div>
         <main className={`flex-1 ${sidebarOpened || docsPanelOpened ? 'overflow-hidden' : 'overflow-auto'}`}>
           {children}

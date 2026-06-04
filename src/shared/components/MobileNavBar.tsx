@@ -12,8 +12,7 @@ export default function MobileNavBar({ onOpenSidebar, onOpenDocsPanel }: MobileN
   return (
     <Box
       component="nav"
-      hiddenFrom="sm"
-      className="shrink-0"
+      className="shrink-0 md:hidden"
       style={{
         borderTop: '1px solid var(--mantine-color-dark-5)',
         background: 'var(--mantine-color-dark-8)',
