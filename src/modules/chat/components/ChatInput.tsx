@@ -61,7 +61,7 @@ export default function ChatInput({ onSend, disabled }: ChatInputProps) {
           <IconSend2 size={18} />
         </ActionIcon>
       </Box>
-      <Text size="xs" c="dimmed" ta="center" mt="xs">
+      <Text size="xs" c="dimmed" ta="center" mt="xs" visibleFrom="sm">
         Naciśnij Enter, aby wysłać — Shift+Enter wstawia nową linię
       </Text>
     </Box>

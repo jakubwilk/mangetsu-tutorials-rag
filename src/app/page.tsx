@@ -1,6 +1,6 @@
 import { ChatView } from 'chat'
 import { readFile } from 'fs/promises'
-import { AppLayout, ChatSidebar, DocsPanel } from 'layout'
+import { AppLayout, ChatSidebar, DocsPanel, Topbar } from 'layout'
 import path from 'path'
 
 export default async function Home() {
@@ -10,7 +10,13 @@ export default async function Home() {
   )
 
   return (
-    <AppLayout sidebar={<ChatSidebar />} docsPanel={<DocsPanel content={docsContent} />}>
+    <AppLayout
+      topbar={<Topbar />}
+      sidebar={<ChatSidebar />}
+      sidebarDrawer={<ChatSidebar fluid />}
+      docsPanel={<DocsPanel content={docsContent} />}
+      docsPanelDrawer={<DocsPanel content={docsContent} fluid />}
+    >
       <ChatView />
     </AppLayout>
   )

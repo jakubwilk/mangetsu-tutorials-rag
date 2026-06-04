@@ -1,4 +1,5 @@
-import { Box, Button, Group, Text } from '@mantine/core'
+import { ActionIcon, Box, Group, Text } from '@mantine/core'
+import { IconExternalLink } from '@tabler/icons-react'
 import { loadNotices, NoticesPopover } from '@/modules/notices'
 
 const FORUM_URL = process.env.NEXT_PUBLIC_FORUM_URL ?? '#'
@@ -28,17 +29,19 @@ export default async function Topbar() {
         </Text>
         <Group gap="xs">
           <NoticesPopover notices={notices} />
-          <Button
+          <ActionIcon
             component="a"
             href={FORUM_URL}
             target="_blank"
             rel="noopener noreferrer"
-            variant="light"
-            color="mangetsu"
-            size="sm"
+            variant="subtle"
+            color="gray"
+            size="xl"
+            aria-label="Przejdź na forum"
+            title="Przejdź na forum"
           >
-            Przejdź na forum ↗
-          </Button>
+            <IconExternalLink size={20} />
+          </ActionIcon>
         </Group>
       </Group>
     </Box>

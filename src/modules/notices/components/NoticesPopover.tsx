@@ -47,7 +47,7 @@ export default function NoticesPopover({ notices }: NoticesPopoverProps) {
       position="bottom-end"
       withArrow
       shadow="md"
-      width={360}
+      width="min(360px, calc(100vw - 2rem))"
     >
       <Popover.Target>
         <Indicator disabled={count === 0} label={count} size={18} color="red" offset={4}>

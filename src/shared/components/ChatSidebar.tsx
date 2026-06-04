@@ -13,7 +13,11 @@ function getSessionPreview(messages: { role: string; content: string }[]): strin
   return first.content.length > 40 ? first.content.slice(0, 40) + '…' : first.content
 }
 
-export default function ChatSidebar() {
+interface ChatSidebarProps {
+  fluid?: boolean
+}
+
+export default function ChatSidebar({ fluid = false }: ChatSidebarProps) {
   const { sessions, activeSessionId, requestsUsed } = useSyncExternalStore(
     chatStore.subscribe,
     chatStore.getSnapshot,
@@ -26,8 +30,7 @@ export default function ChatSidebar() {
     <Box
       component="nav"
       style={{
-        ...PANEL_WIDTH,
-        borderRight: '1px solid var(--mantine-color-dark-5)',
+        ...(fluid ? { flex: 1 } : { ...PANEL_WIDTH, borderRight: '1px solid var(--mantine-color-dark-5)' }),
         background: 'var(--mantine-color-dark-8)',
         display: 'flex',
         flexDirection: 'column',
