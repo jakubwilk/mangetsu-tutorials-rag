@@ -10,6 +10,11 @@ const DAILY_LIMIT = parseInt(process.env.DAILY_REQUEST_LIMIT ?? "20", 10);
 const STAT_ADVANCEMENT_PATTERN =
   /zwi[eę]kszy[ćc]|ulepsz|awanso|wykupi[ćc]|rozwin|podbij|podnie[sś][ćc]|rang[aąię]|poziom|statystyk[aąię]/i;
 
+const INJECTION_PATTERN =
+  /ignore\s+(previous\s+)?instructions?|zapomnij\s+(poprzednie\s+)?instrukcj|zignoruj\s+zasady|jeste[sś]\s+teraz|you\s+are\s+now|act\s+as\b|udawaj\s+[żz]e\s+jeste[sś]/i;
+
+const MAX_MESSAGE_LENGTH = 1000;
+
 const enc = new TextEncoder();
 const sseEvent = (data: object) => enc.encode(`data: ${JSON.stringify(data)}\n\n`);
 
@@ -29,6 +34,9 @@ export async function POST(request: NextRequest) {
   if (typeof sessionId !== "string" || !sessionId.trim()) {
     return NextResponse.json({ error: "Pole 'sessionId' jest wymagane." }, { status: 400 });
   }
+  if (INJECTION_PATTERN.test(message)) {
+    return NextResponse.json({ error: "Nieprawidłowe zapytanie." }, { status: 400 });
+  }
 
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
   const now = new Date();
@@ -45,7 +53,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const searchQuery = message.trim();
+  const searchQuery = message.trim().slice(0, MAX_MESSAGE_LENGTH);
   const needsCostContext = STAT_ADVANCEMENT_PATTERN.test(searchQuery);
 
   const [chunks, costChunks, existingConversation] = await Promise.all([
@@ -78,7 +86,7 @@ export async function POST(request: NextRequest) {
           messages: [
             { role: "system", content: systemPrompt },
             ...history,
-            { role: "user", content: message.trim() },
+            { role: "user", content: searchQuery },
           ],
           temperature: 0.7,
           max_tokens: 1024,
@@ -106,7 +114,7 @@ export async function POST(request: NextRequest) {
 
         await db.message.createMany({
           data: [
-            { conversationId, role: "user", content: message.trim(), tokensUsed: 0 },
+            { conversationId, role: "user", content: searchQuery, tokensUsed: 0 },
             { conversationId, role: "assistant", content: fullContent, tokensUsed },
           ],
         });
