@@ -4,7 +4,7 @@ import { Alert, Box, Center, Loader } from '@mantine/core'
 import { IconServerOff } from '@tabler/icons-react'
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react'
 
-import { notifyError } from '@/shared/utils/notifications'
+import { notifyError } from 'common/utils/notifications'
 
 import { chatStore } from '../store'
 import type { Message } from '../types'

@@ -3,7 +3,7 @@
 import { Box, Button, Divider, Group, Stack, Text, UnstyledButton } from '@mantine/core'
 import { useSyncExternalStore } from 'react'
 
-import { chatStore } from '@/modules/chat/store'
+import { chatStore } from 'chat/store'
 
 const PANEL_WIDTH = { width: '20vw', maxWidth: 300, flexShrink: 0 }
 

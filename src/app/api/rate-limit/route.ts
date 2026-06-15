@@ -1,3 +1,3 @@
-import { GET } from '@/modules/chat/api/rate-limit'
+import { GET } from 'chat/api/rate-limit'
 
 export { GET }

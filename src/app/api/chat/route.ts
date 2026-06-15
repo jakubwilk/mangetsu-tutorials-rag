@@ -1,3 +1,3 @@
-import { POST } from '@/modules/chat/api/handler'
+import { POST } from 'chat/api/handler'
 
 export { POST }

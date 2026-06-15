@@ -1,5 +1,5 @@
-import { embedText } from "@/server/ai/embeddings";
-import { db } from "@/server/db";
+import { embedText } from 'server/ai/embeddings';
+import { db } from 'server/db';
 
 import type { SearchResult } from "../types";
 

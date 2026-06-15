@@ -1,3 +1,3 @@
-import { GET } from '@/modules/chat/api/sessions'
+import { GET } from 'chat/api/sessions'
 
 export { GET }
