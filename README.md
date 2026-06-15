@@ -13,14 +13,14 @@ Prywatna aplikacja webowa do przeszukiwania poradników z forum Mangetsu przy u�
 
 ## Stack technologiczny
 
-| Warstwa     | Technologia                                          |
-| ----------- | ---------------------------------------------------- |
-| Frontend    | Next.js 16 (App Router), TypeScript                  |
-| UI          | Mantine v9, Tailwind CSS                             |
-| Backend     | Next.js Route Handlers                               |
-| Baza danych | PostgreSQL (full-text search: `tsvector`/`tsquery`)  |
-| LLM         | OVH AI Endpoints                                     |
-| Hosting     | OVH VPS → Coolify + Nixpacks                         |
+| Warstwa     | Technologia                                         |
+| ----------- | --------------------------------------------------- |
+| Frontend    | Next.js 16 (App Router), TypeScript                 |
+| UI          | Mantine v9, Tailwind CSS                            |
+| Backend     | Next.js Route Handlers                              |
+| Baza danych | PostgreSQL (full-text search: `tsvector`/`tsquery`) |
+| LLM         | OVH AI Endpoints                                    |
+| Hosting     | OVH VPS → Coolify + Nixpacks                        |
 
 ## Architektura
 

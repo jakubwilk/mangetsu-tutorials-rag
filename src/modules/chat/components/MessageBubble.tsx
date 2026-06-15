@@ -18,14 +18,12 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
       style={{ animation: 'bubble-in 250ms ease' }}
     >
       <Box
-        className="max-w-[75%] py-2.5 px-3.5"
+        className="max-w-[75%] px-3.5 py-2.5"
         style={{
           borderRadius: isUser
             ? 'var(--mantine-radius-lg) var(--mantine-radius-lg) var(--mantine-radius-xs) var(--mantine-radius-lg)'
             : 'var(--mantine-radius-lg) var(--mantine-radius-lg) var(--mantine-radius-lg) var(--mantine-radius-xs)',
-          background: isUser
-            ? 'var(--mantine-color-mangetsu-7)'
-            : 'var(--mantine-color-dark-6)',
+          background: isUser ? 'var(--mantine-color-mangetsu-7)' : 'var(--mantine-color-dark-6)',
         }}
       >
         {isUser ? (

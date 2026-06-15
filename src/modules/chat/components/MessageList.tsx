@@ -14,14 +14,12 @@ interface MessageListProps {
 }
 
 function TypingIndicator() {
-  const [text] = useState(
-    () => loadingMessages[Math.floor(Math.random() * loadingMessages.length)]
-  )
+  const [text] = useState(() => loadingMessages[Math.floor(Math.random() * loadingMessages.length)])
 
   return (
     <Box className="flex justify-start">
       <Box
-        className="flex gap-2 items-center py-2.5 px-4"
+        className="flex items-center gap-2 px-4 py-2.5"
         style={{
           background: 'var(--mantine-color-dark-6)',
           borderRadius:

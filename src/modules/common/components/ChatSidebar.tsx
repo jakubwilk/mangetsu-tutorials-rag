@@ -21,7 +21,7 @@ export default function ChatSidebar({ fluid = false }: ChatSidebarProps) {
   const { sessions, activeSessionId, requestsUsed } = useSyncExternalStore(
     chatStore.subscribe,
     chatStore.getSnapshot,
-    chatStore.getServerSnapshot
+    chatStore.getServerSnapshot,
   )
 
   const visibleSessions = sessions.filter((s) => s.messages.length > 0)
@@ -30,7 +30,9 @@ export default function ChatSidebar({ fluid = false }: ChatSidebarProps) {
     <Box
       component="nav"
       style={{
-        ...(fluid ? { flex: 1 } : { ...PANEL_WIDTH, borderRight: '1px solid var(--mantine-color-dark-5)' }),
+        ...(fluid
+          ? { flex: 1 }
+          : { ...PANEL_WIDTH, borderRight: '1px solid var(--mantine-color-dark-5)' }),
         background: 'var(--mantine-color-dark-8)',
         display: 'flex',
         flexDirection: 'column',
@@ -65,9 +67,7 @@ export default function ChatSidebar({ fluid = false }: ChatSidebarProps) {
                 padding: '6px 8px',
                 borderRadius: 6,
                 background:
-                  session.id === activeSessionId
-                    ? 'var(--mantine-color-dark-5)'
-                    : 'transparent',
+                  session.id === activeSessionId ? 'var(--mantine-color-dark-5)' : 'transparent',
               }}
             >
               <Text size="xs" c={session.id === activeSessionId ? 'white' : 'dimmed'} truncate>

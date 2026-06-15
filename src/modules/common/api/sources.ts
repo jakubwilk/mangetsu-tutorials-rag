@@ -10,7 +10,7 @@ export const submitSource = async (method: SourceMethod, data: string): Promise<
     body: JSON.stringify({ method, data }),
   })
 
-  const json = await res.json() as { status: number; message: string }
+  const json = (await res.json()) as { status: number; message: string }
 
   if (!res.ok) throw new Error(json.message)
 

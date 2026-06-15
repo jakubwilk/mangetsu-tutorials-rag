@@ -167,13 +167,13 @@ Wyjątek: jeśli hook wymaga zmiennej lub elementu stanu (np. `useRef` zainicjow
 
 Aktywne pluginy w `.claude/settings.json` — używaj ich zamiast ręcznego podejścia gdy pasują do zadania.
 
-| Plugin | Kiedy używać |
-|--------|--------------|
-| **feature-dev** | Rozpoczęcie nowej funkcjonalności — prowadzi przez zrozumienie kodu, architekturę i implementację krok po kroku |
-| **frontend-design** | Budowanie komponentów UI, stron lub całych widoków — generuje produkcyjnej jakości interfejsy, unika generycznych wzorców |
-| **typescript-lsp** | Diagnostyka błędów TypeScript, podpowiedzi typów, nawigacja po symbolach bez uruchamiania buildu |
+| Plugin                   | Kiedy używać                                                                                                                                        |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **feature-dev**          | Rozpoczęcie nowej funkcjonalności — prowadzi przez zrozumienie kodu, architekturę i implementację krok po kroku                                     |
+| **frontend-design**      | Budowanie komponentów UI, stron lub całych widoków — generuje produkcyjnej jakości interfejsy, unika generycznych wzorców                           |
+| **typescript-lsp**       | Diagnostyka błędów TypeScript, podpowiedzi typów, nawigacja po symbolach bez uruchamiania buildu                                                    |
 | **claude-md-management** | Audyt i aktualizacja CLAUDE.md po sesji — `/revise-claude-md` zapisuje wnioski z bieżącej sesji, `/claude-md-improver` sprawdza jakość całego pliku |
-| **code-review** | Review kodu po implementacji — analizuje PR lub zmiany pod kątem jakości, bezpieczeństwa i spójności z projektem |
+| **code-review**          | Review kodu po implementacji — analizuje PR lub zmiany pod kątem jakości, bezpieczeństwa i spójności z projektem                                    |
 
 ---
 
@@ -206,19 +206,19 @@ Typy: `feat`, `fix`, `refactor`, `test`, `chore`, `docs`, `style`
 
 Kod aplikacji podzielony na moduły według domeny w `src/modules/`:
 
-| Moduł | Zawartość |
-|-------|-----------|
-| `common` | Komponenty layoutu (AppLayout, Topbar, ChatSidebar, DocsPanel), utility (notifications), api (webhook źródeł) |
-| `chat` | ChatView, ChatInput, MessageList, MessageBubble, store (stan sesji), api (handler, sessions, rate-limit) |
-| `notices` | NoticesPopover, loader `docs/notices.json`, store (dismissed w localStorage) |
-| `search` | chunker.ts, search.ts (FTS + hybrid RRF) |
+| Moduł     | Zawartość                                                                                                     |
+| --------- | ------------------------------------------------------------------------------------------------------------- |
+| `common`  | Komponenty layoutu (AppLayout, Topbar, ChatSidebar, DocsPanel), utility (notifications), api (webhook źródeł) |
+| `chat`    | ChatView, ChatInput, MessageList, MessageBubble, store (stan sesji), api (handler, sessions, rate-limit)      |
+| `notices` | NoticesPopover, loader `docs/notices.json`, store (dismissed w localStorage)                                  |
+| `search`  | chunker.ts, search.ts (FTS + hybrid RRF)                                                                      |
 
 Warstwa serwerowa (`src/server/`) — bez importów po stronie klienta:
 
-| Katalog | Zawartość |
-|---------|-----------|
-| `server/db` | Singleton Prisma Client |
-| `server/ai` | Klient OVH AI Endpoints, funkcja embedText() |
-| `server/prompts` | System prompt dla LLM |
+| Katalog          | Zawartość                                    |
+| ---------------- | -------------------------------------------- |
+| `server/db`      | Singleton Prisma Client                      |
+| `server/ai`      | Klient OVH AI Endpoints, funkcja embedText() |
+| `server/prompts` | System prompt dla LLM                        |
 
 Historyczny harmonogram implementacji: **`PLAN.md`** w root projektu (fazy 1–11 ukończone).

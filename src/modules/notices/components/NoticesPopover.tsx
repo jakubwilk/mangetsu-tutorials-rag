@@ -1,15 +1,6 @@
 'use client'
 
-import {
-  ActionIcon,
-  Alert,
-  Box,
-  Button,
-  Indicator,
-  Popover,
-  Stack,
-  Text,
-} from '@mantine/core'
+import { ActionIcon, Alert, Box, Button, Indicator, Popover, Stack, Text } from '@mantine/core'
 import { IconAlertTriangleFilled, IconBell, IconInfoCircleFilled } from '@tabler/icons-react'
 import { useEffect, useState, useSyncExternalStore } from 'react'
 

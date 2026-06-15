@@ -15,7 +15,9 @@ export default function DocsPanel({ content, fluid = false }: DocsPanelProps) {
     <Box
       component="aside"
       style={{
-        ...(fluid ? { flex: 1 } : { ...PANEL_WIDTH, borderLeft: '1px solid var(--mantine-color-dark-5)' }),
+        ...(fluid
+          ? { flex: 1 }
+          : { ...PANEL_WIDTH, borderLeft: '1px solid var(--mantine-color-dark-5)' }),
         background: 'var(--mantine-color-dark-8)',
         display: 'flex',
         flexDirection: 'column',
@@ -35,7 +37,7 @@ export default function DocsPanel({ content, fluid = false }: DocsPanelProps) {
         </Box>
       )}
 
-      <ScrollArea className="flex-1 min-h-0" p="md">
+      <ScrollArea className="min-h-0 flex-1" p="md">
         <Typography>
           <ReactMarkdown>{content}</ReactMarkdown>
         </Typography>

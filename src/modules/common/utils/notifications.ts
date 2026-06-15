@@ -23,7 +23,11 @@ export const notifyInfo = (message: string) =>
     color: 'mangetsu',
     radius: 'sm',
     withBorder: true,
-    icon: createElement(IconInfoCircle, { size: 20, stroke: 1.5, color: 'var(--mantine-color-mangetsu-5)' }),
+    icon: createElement(IconInfoCircle, {
+      size: 20,
+      stroke: 1.5,
+      color: 'var(--mantine-color-mangetsu-5)',
+    }),
     styles: sharedStyles,
   })
 
@@ -33,6 +37,10 @@ export const notifyWarning = (message: string) =>
     color: 'yellow',
     radius: 'sm',
     withBorder: true,
-    icon: createElement(IconAlertTriangle, { size: 20, stroke: 1.5, color: 'var(--mantine-color-yellow-5)' }),
+    icon: createElement(IconAlertTriangle, {
+      size: 20,
+      stroke: 1.5,
+      color: 'var(--mantine-color-yellow-5)',
+    }),
     styles: sharedStyles,
   })

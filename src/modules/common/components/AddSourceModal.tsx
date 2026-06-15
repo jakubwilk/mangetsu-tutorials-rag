@@ -1,6 +1,16 @@
 'use client'
 
-import { ActionIcon, Button, Group, Modal, SegmentedControl, Stack, Textarea, TextInput, Tooltip } from '@mantine/core'
+import {
+  ActionIcon,
+  Button,
+  Group,
+  Modal,
+  SegmentedControl,
+  Stack,
+  Textarea,
+  TextInput,
+  Tooltip,
+} from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { IconPlus } from '@tabler/icons-react'
 import { useState } from 'react'
@@ -35,7 +45,9 @@ export default function AddSourceModal() {
       notifyInfo(message)
       handleClose()
     } catch (err) {
-      notifyError(err instanceof Error ? err.message : 'Nie udało się dodać źródła. Spróbuj ponownie.')
+      notifyError(
+        err instanceof Error ? err.message : 'Nie udało się dodać źródła. Spróbuj ponownie.',
+      )
     } finally {
       setLoading(false)
     }
