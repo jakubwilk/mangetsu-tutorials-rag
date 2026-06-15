@@ -202,11 +202,23 @@ Typy: `feat`, `fix`, `refactor`, `test`, `chore`, `docs`, `style`
 - Język interfejsu: polski
 - Język kodu / komentarzy: angielski
 
-## Plan implementacji
+## Architektura modułowa
 
-Harmonogram faz UI i backend: **`PLAN.md`** w root projektu.
+Kod aplikacji podzielony na moduły według domeny w `src/modules/`:
 
-- Fazy 1–3: ukończone (motyw, pliki statyczne, App Shell)
-- Faza 4+: panel czatu, system ogłoszeń, powiadomienia, integracja
-- Format statusu: `[ ]` = do zrobienia, `[x]` = ukończone, `[~]` = w toku
-- Po ukończeniu fazy: zaktualizuj statusy w `PLAN.md` i zrób commit
+| Moduł | Zawartość |
+|-------|-----------|
+| `common` | Komponenty layoutu (AppLayout, Topbar, ChatSidebar, DocsPanel), utility (notifications), api (webhook źródeł) |
+| `chat` | ChatView, ChatInput, MessageList, MessageBubble, store (stan sesji), api (handler, sessions, rate-limit) |
+| `notices` | NoticesPopover, loader `docs/notices.json`, store (dismissed w localStorage) |
+| `search` | chunker.ts, search.ts (FTS + hybrid RRF) |
+
+Warstwa serwerowa (`src/server/`) — bez importów po stronie klienta:
+
+| Katalog | Zawartość |
+|---------|-----------|
+| `server/db` | Singleton Prisma Client |
+| `server/ai` | Klient OVH AI Endpoints, funkcja embedText() |
+| `server/prompts` | System prompt dla LLM |
+
+Historyczny harmonogram implementacji: **`PLAN.md`** w root projektu (fazy 1–11 ukończone).
