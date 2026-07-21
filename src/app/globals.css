@@ -43,28 +43,3 @@ html {
   }
 }
 
-@keyframes typing-dot {
-  0%,
-  60%,
-  100% {
-    opacity: 0.3;
-    transform: translateY(0);
-  }
-  30% {
-    opacity: 1;
-    transform: translateY(-4px);
-  }
-}
-
-.chat-markdown p {
-  margin: 0 0 0.4em;
-}
-.chat-markdown p:last-child {
-  margin-bottom: 0;
-}
-.chat-markdown code {
-  background: var(--mantine-color-dark-8);
-  padding: 0.1em 0.35em;
-  border-radius: 4px;
-  font-size: 0.875em;
-}
