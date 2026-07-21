@@ -5,8 +5,8 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 import { PrismaClient } from '../src/generated/prisma/client'
-import { embedText } from '../src/server/ai/embeddings'
 import { chunkText } from '../src/modules/search/utils/chunker'
+import { embedText } from '../src/server/ai/embeddings'
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
 const db = new PrismaClient({ adapter })
