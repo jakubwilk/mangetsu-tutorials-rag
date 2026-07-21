@@ -1,3 +1,26 @@
-import { GET } from 'chat/api/sessions'
+import { NextRequest, NextResponse } from 'next/server'
+import { db } from 'server/db'
 
-export { GET }
+export async function GET(request: NextRequest) {
+  const ids = (request.nextUrl.searchParams.get('ids')?.split(',').filter(Boolean) ?? []).slice(
+    0,
+    50,
+  )
+
+  if (ids.length === 0) {
+    return NextResponse.json({ valid: [] })
+  }
+
+  try {
+    const conversations = await db.conversation.findMany({
+      where: { sessionId: { in: ids } },
+      select: { sessionId: true },
+    })
+
+    const valid = [...new Set(conversations.map((c) => c.sessionId))]
+
+    return NextResponse.json({ valid })
+  } catch {
+    return NextResponse.json({ error: 'Service unavailable' }, { status: 503 })
+  }
+}
