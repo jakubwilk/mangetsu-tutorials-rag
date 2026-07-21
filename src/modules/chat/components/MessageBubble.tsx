@@ -32,7 +32,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
           </Text>
         ) : (
           <Box
-            className="chat-markdown leading-[1.65]"
+            className="leading-[1.65] [&_code]:rounded [&_code]:bg-[var(--mantine-color-dark-8)] [&_code]:px-[0.35em] [&_code]:py-[0.1em] [&_code]:text-[0.875em] [&_p]:mb-[0.4em] [&_p:last-child]:mb-0"
             style={{
               fontSize: 'var(--mantine-font-size-sm)',
               color: 'var(--mantine-color-gray-2)',
