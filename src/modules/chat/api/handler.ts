@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-
+import { searchChunks } from 'search'
 import { openai } from 'server/ai'
 import { db } from 'server/db'
 import { buildSystemPrompt } from 'server/prompts'
-import { searchChunks } from 'search'
 
 const DAILY_LIMIT = parseInt(process.env.DAILY_REQUEST_LIMIT ?? '20', 10)
 
