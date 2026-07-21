@@ -1,8 +1,9 @@
 import { ActionIcon, Box, Group, Text } from '@mantine/core'
 import { IconExternalLink } from '@tabler/icons-react'
-import { loadNotices, NoticesPopover } from 'notices'
+import { NoticesPopover } from 'notices'
+import { loadNotices } from 'server/notices'
 
-import AddSourceModal from './AddSourceModal'
+import AddSourceModal from '../modals/AddSourceModal'
 
 const FORUM_URL = process.env.NEXT_PUBLIC_FORUM_URL ?? '#'
 

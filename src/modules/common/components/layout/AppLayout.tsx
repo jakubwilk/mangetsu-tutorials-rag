@@ -3,7 +3,7 @@
 import { Drawer } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 
-import MobileNavBar from './MobileNavBar'
+import MobileNavBar from '../navigation/MobileNavBar'
 
 interface AppLayoutProps {
   children: React.ReactNode
