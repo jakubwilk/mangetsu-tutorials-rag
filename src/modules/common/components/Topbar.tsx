@@ -1,6 +1,8 @@
 import { ActionIcon, Box, Group, Text } from '@mantine/core'
 import { IconExternalLink } from '@tabler/icons-react'
-import { loadNotices, NoticesPopover } from '@/modules/notices'
+import { loadNotices, NoticesPopover } from 'notices'
+
+import AddSourceModal from './AddSourceModal'
 
 const FORUM_URL = process.env.NEXT_PUBLIC_FORUM_URL ?? '#'
 
@@ -28,6 +30,7 @@ export default async function Topbar() {
           <span className="text-[0.85rem] font-bold tracking-wider text-white"> RAG</span>
         </Text>
         <Group gap="xs">
+          <AddSourceModal />
           <NoticesPopover notices={notices} />
           <ActionIcon
             component="a"

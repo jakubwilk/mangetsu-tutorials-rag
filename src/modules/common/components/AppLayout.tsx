@@ -40,7 +40,9 @@ export default function AppLayout({
       {topbar}
       <div className="flex min-h-0 flex-1 overflow-hidden">
         <div className="hidden md:contents">{sidebar}</div>
-        <main className={`flex-1 ${sidebarOpened || docsPanelOpened ? 'overflow-hidden' : 'overflow-auto'}`}>
+        <main
+          className={`flex-1 ${sidebarOpened || docsPanelOpened ? 'overflow-hidden' : 'overflow-auto'}`}
+        >
           {children}
         </main>
         <div className="hidden md:contents">{docsPanel}</div>

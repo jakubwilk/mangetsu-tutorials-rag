@@ -4,7 +4,7 @@ import { Alert, Box, Center, Loader } from '@mantine/core'
 import { IconServerOff } from '@tabler/icons-react'
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react'
 
-import { notifyError } from '@/shared/utils/notifications'
+import { notifyError } from 'common/utils/notifications'
 
 import { chatStore } from '../store'
 import type { Message } from '../types'
@@ -15,7 +15,7 @@ export default function ChatView() {
   const { sessions, activeSessionId, requestsUsed } = useSyncExternalStore(
     chatStore.subscribe,
     chatStore.getSnapshot,
-    chatStore.getServerSnapshot
+    chatStore.getServerSnapshot,
   )
 
   const [isValidating, setIsValidating] = useState(true)
@@ -42,7 +42,7 @@ export default function ChatView() {
         })
 
         if (!response.ok || !response.body) {
-          const data = await response.json().catch(() => ({})) as { error?: string }
+          const data = (await response.json().catch(() => ({}))) as { error?: string }
           if (response.status === 429) {
             notifyError(data.error ?? 'Przekroczono dzienny limit zapytań. Spróbuj ponownie jutro.')
             chatStore.setRequestsUsed(chatStore.requestLimit)
@@ -81,7 +81,11 @@ export default function ChatView() {
             if (event.type === 'token' && event.content) {
               if (!assistantMessageId) {
                 assistantMessageId = crypto.randomUUID()
-                chatStore.addMessage({ id: assistantMessageId, role: 'assistant', content: event.content })
+                chatStore.addMessage({
+                  id: assistantMessageId,
+                  role: 'assistant',
+                  content: event.content,
+                })
                 setIsLoading(false)
               } else {
                 chatStore.appendToMessage(assistantMessageId, event.content)
@@ -101,15 +105,15 @@ export default function ChatView() {
         setIsLoading(false)
       }
     },
-    [isLoading, requestsUsed, activeSessionId]
+    [isLoading, requestsUsed, activeSessionId],
   )
 
   useEffect(() => {
     chatStore.init()
 
-    const sessionsWithMessages = chatStore.getSnapshot().sessions.filter(
-      (s) => s.messages.length > 0
-    )
+    const sessionsWithMessages = chatStore
+      .getSnapshot()
+      .sessions.filter((s) => s.messages.length > 0)
     const ids = sessionsWithMessages.map((s) => s.id).join(',')
 
     const fetchJson = async <T,>(url: string): Promise<T> => {
@@ -141,7 +145,7 @@ export default function ChatView() {
   }
 
   return (
-    <Box className="flex flex-col h-full">
+    <Box className="flex h-full flex-col">
       <MessageList messages={messages} isLoading={isLoading} />
       {isDbError ? (
         <Alert

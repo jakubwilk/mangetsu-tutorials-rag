@@ -1,3 +1,4 @@
+export { default as AddSourceModal } from './AddSourceModal'
 export { default as AppLayout } from './AppLayout'
 export { default as ChatSidebar } from './ChatSidebar'
 export { default as DocsPanel } from './DocsPanel'

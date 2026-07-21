@@ -13,14 +13,14 @@ Prywatna aplikacja webowa do przeszukiwania poradników z forum Mangetsu przy u�
 
 ## Stack technologiczny
 
-| Warstwa     | Technologia                                          |
-| ----------- | ---------------------------------------------------- |
-| Frontend    | Next.js 16 (App Router), TypeScript                  |
-| UI          | Mantine v9, Tailwind CSS                             |
-| Backend     | Next.js Route Handlers                               |
-| Baza danych | PostgreSQL (full-text search: `tsvector`/`tsquery`)  |
-| LLM         | OVH AI Endpoints                                     |
-| Hosting     | OVH VPS → Coolify + Nixpacks                         |
+| Warstwa     | Technologia                                         |
+| ----------- | --------------------------------------------------- |
+| Frontend    | Next.js 16 (App Router), TypeScript                 |
+| UI          | Mantine v9, Tailwind CSS                            |
+| Backend     | Next.js Route Handlers                              |
+| Baza danych | PostgreSQL (full-text search: `tsvector`/`tsquery`) |
+| LLM         | OVH AI Endpoints                                    |
+| Hosting     | OVH VPS → Coolify + Nixpacks                        |
 
 ## Architektura
 
@@ -59,22 +59,40 @@ Każda wiadomość zapisywana do PostgreSQL. Tabela `conversations` przechowuje 
 
 ```
 mangetsu-tutorials-rag/
-├── content/                  # Pliki poradników (markdown/txt)
+├── content/                        # Pliki poradników (markdown)
+├── docs/                           # Pliki statyczne: notices.json, documents-info.md
+├── prisma/                         # Schema i migracje Prisma ORM
+├── scripts/                        # Skrypty pomocnicze (seed)
 ├── src/
 │   ├── app/
-│   │   ├── page.tsx          # Główny interfejs czatu
+│   │   ├── page.tsx                # Główna strona (Server Component)
+│   │   ├── layout.tsx              # Root layout z MantineProvider
 │   │   └── api/
-│   │       ├── chat/route.ts # Obsługa zapytań do LLM
-│   │       └── seed/route.ts # Seeding bazy danych z plików
-│   ├── components/
-│   │   └── Chat/             # Komponenty czatu
-│   ├── lib/
-│   │   ├── db.ts             # Klient PostgreSQL
-│   │   ├── chunker.ts        # Logika fragmentacji plików
-│   │   ├── search.ts         # Full-text search
-│   │   └── llm.ts            # Klient OVH AI Endpoints
-│   └── types/
-├── docker-compose.yml        # Lokalny development (Postgres)
+│   │       ├── chat/route.ts       # POST /api/chat — RAG pipeline
+│   │       ├── sessions/route.ts   # GET /api/sessions — walidacja sesji
+│   │       └── rate-limit/route.ts # GET /api/rate-limit — licznik zapytań
+│   ├── modules/
+│   │   ├── common/                 # Współdzielone komponenty layoutu i utility
+│   │   │   ├── api/sources.ts      # Webhook — dodawanie źródeł
+│   │   │   ├── components/         # AppLayout, Topbar, ChatSidebar, DocsPanel, ...
+│   │   │   ├── data/               # loading-messages.json
+│   │   │   └── utils/notifications.ts
+│   │   ├── chat/                   # Moduł czatu
+│   │   │   ├── api/                # Klienty HTTP: handler, sessions, rate-limit
+│   │   │   ├── components/         # ChatView, ChatInput, MessageList, MessageBubble
+│   │   │   ├── store/              # Stan czatu (external store)
+│   │   │   └── types/
+│   │   ├── notices/                # System ogłoszeń
+│   │   │   ├── api/loader.ts       # Czyta docs/notices.json
+│   │   │   ├── components/         # NoticesPopover
+│   │   │   └── store/              # Stan odrzuconych ogłoszeń (localStorage)
+│   │   └── search/                 # FTS + hybrid search
+│   │       └── utils/              # chunker.ts, search.ts
+│   ├── server/
+│   │   ├── ai/                     # Klient OVH AI Endpoints + embeddingi
+│   │   ├── db/                     # Singleton Prisma Client
+│   │   └── prompts/                # System prompt dla LLM
+│   └── generated/prisma/           # Auto-generowane typy Prisma
 ├── .env.example
 └── CLAUDE.md
 ```

@@ -1,43 +1,43 @@
-import "dotenv/config";
+import 'dotenv/config'
 
-import { PrismaPg } from "@prisma/adapter-pg";
-import * as fs from "fs";
-import * as path from "path";
+import { PrismaPg } from '@prisma/adapter-pg'
+import * as fs from 'fs'
+import * as path from 'path'
 
-import { PrismaClient } from "../src/generated/prisma/client";
-import { embedText } from "../src/server/ai/embeddings";
-import { chunkText } from "../src/modules/search/utils/chunker";
+import { PrismaClient } from '../src/generated/prisma/client'
+import { embedText } from '../src/server/ai/embeddings'
+import { chunkText } from '../src/modules/search/utils/chunker'
 
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
-const db = new PrismaClient({ adapter });
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
+const db = new PrismaClient({ adapter })
 
-const CONTENT_DIR = path.join(process.cwd(), "content");
+const CONTENT_DIR = path.join(process.cwd(), 'content')
 
 const getTitle = (filePath: string): string => {
-  const name = path.basename(filePath, ".md");
+  const name = path.basename(filePath, '.md')
   return name
-    .split("-")
+    .split('-')
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
-};
+    .join(' ')
+}
 
 const seedDocument = async (filePath: string, category: string) => {
-  const relativePath = path.relative(process.cwd(), filePath).replace(/\\/g, "/");
-  const title = getTitle(filePath);
-  const content = fs.readFileSync(filePath, "utf-8");
-  const chunks = chunkText(content);
+  const relativePath = path.relative(process.cwd(), filePath).replace(/\\/g, '/')
+  const title = getTitle(filePath)
+  const content = fs.readFileSync(filePath, 'utf-8')
+  const chunks = chunkText(content)
 
   await db.document.upsert({
     where: { filePath: relativePath },
     update: { title, category },
     create: { title, category, filePath: relativePath },
-  });
+  })
 
-  const doc = await db.document.findUniqueOrThrow({ where: { filePath: relativePath } });
+  const doc = await db.document.findUniqueOrThrow({ where: { filePath: relativePath } })
 
-  await db.chunk.deleteMany({ where: { documentId: doc.id } });
+  await db.chunk.deleteMany({ where: { documentId: doc.id } })
 
-  const createdIds: string[] = [];
+  const createdIds: string[] = []
   for (const chunk of chunks) {
     const created = await db.chunk.create({
       data: {
@@ -46,46 +46,46 @@ const seedDocument = async (filePath: string, category: string) => {
         chunkIndex: chunk.chunkIndex,
       },
       select: { id: true },
-    });
-    createdIds.push(created.id);
+    })
+    createdIds.push(created.id)
   }
 
   for (let i = 0; i < chunks.length; i++) {
-    const embedding = await embedText(chunks[i]!.content);
-    const vector = `[${embedding.join(",")}]`;
-    await db.$executeRaw`UPDATE chunks SET embedding = ${vector}::vector WHERE id = ${createdIds[i]}`;
+    const embedding = await embedText(chunks[i]!.content)
+    const vector = `[${embedding.join(',')}]`
+    await db.$executeRaw`UPDATE chunks SET embedding = ${vector}::vector WHERE id = ${createdIds[i]}`
   }
 
-  console.log(`  [${category}] ${title} — ${chunks.length} chunks`);
-};
+  console.log(`  [${category}] ${title} — ${chunks.length} chunks`)
+}
 
 const main = async () => {
-  console.log("Seeding content...\n");
+  console.log('Seeding content...\n')
 
-  const categories = fs.readdirSync(CONTENT_DIR).filter((entry) =>
-    fs.statSync(path.join(CONTENT_DIR, entry)).isDirectory()
-  );
+  const categories = fs
+    .readdirSync(CONTENT_DIR)
+    .filter((entry) => fs.statSync(path.join(CONTENT_DIR, entry)).isDirectory())
 
   for (const category of categories) {
-    const categoryDir = path.join(CONTENT_DIR, category);
+    const categoryDir = path.join(CONTENT_DIR, category)
     const files = fs
       .readdirSync(categoryDir)
-      .filter((f) => f.endsWith(".md"))
-      .map((f) => path.join(categoryDir, f));
+      .filter((f) => f.endsWith('.md'))
+      .map((f) => path.join(categoryDir, f))
 
     for (const file of files) {
-      await seedDocument(file, category);
+      await seedDocument(file, category)
     }
   }
 
-  const docCount = await db.document.count();
-  const chunkCount = await db.chunk.count();
-  console.log(`\nDone. ${docCount} documents, ${chunkCount} chunks total.`);
-};
+  const docCount = await db.document.count()
+  const chunkCount = await db.chunk.count()
+  console.log(`\nDone. ${docCount} documents, ${chunkCount} chunks total.`)
+}
 
 main()
   .catch((err) => {
-    console.error(err);
-    process.exit(1);
+    console.error(err)
+    process.exit(1)
   })
-  .finally(() => db.$disconnect());
+  .finally(() => db.$disconnect())

@@ -116,7 +116,7 @@ export const chatStore = {
 
   addMessage(message: Message) {
     const sessions = snapshot.sessions.map((s) =>
-      s.id === snapshot.activeSessionId ? { ...s, messages: [...s.messages, message] } : s
+      s.id === snapshot.activeSessionId ? { ...s, messages: [...s.messages, message] } : s,
     )
     snapshot = { ...snapshot, sessions }
     persistSessions(sessions)
@@ -129,10 +129,10 @@ export const chatStore = {
         ? {
             ...s,
             messages: s.messages.map((m) =>
-              m.id === id ? { ...m, content: m.content + delta } : m
+              m.id === id ? { ...m, content: m.content + delta } : m,
             ),
           }
-        : s
+        : s,
     )
     snapshot = { ...snapshot, sessions }
     notify()
@@ -161,9 +161,7 @@ export const chatStore = {
 
   pruneInvalidSessions(validIds: string[]) {
     const validSet = new Set(validIds)
-    const sessions = snapshot.sessions.filter(
-      (s) => s.messages.length === 0 || validSet.has(s.id)
-    )
+    const sessions = snapshot.sessions.filter((s) => s.messages.length === 0 || validSet.has(s.id))
 
     let { activeSessionId } = snapshot
     if (!sessions.find((s) => s.id === activeSessionId)) {

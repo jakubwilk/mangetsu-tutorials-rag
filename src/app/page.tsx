@@ -1,13 +1,10 @@
 import { ChatView } from 'chat'
 import { readFile } from 'fs/promises'
-import { AppLayout, ChatSidebar, DocsPanel, Topbar } from 'layout'
+import { AppLayout, ChatSidebar, DocsPanel, Topbar } from 'common'
 import path from 'path'
 
 export default async function Home() {
-  const docsContent = await readFile(
-    path.join(process.cwd(), 'docs', 'documents-info.md'),
-    'utf-8'
-  )
+  const docsContent = await readFile(path.join(process.cwd(), 'docs', 'documents-info.md'), 'utf-8')
 
   return (
     <AppLayout

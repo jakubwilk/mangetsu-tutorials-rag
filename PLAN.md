@@ -35,6 +35,7 @@
 Każdy komunikat potrzebuje `id` (do śledzenia odrzuconych w localStorage), `type` (info/warning) oraz `message`. Markdown nie daje tej struktury bez parsowania frontmatter — JSON jest tu czytelniejszy i prostszy.
 
 **Format `notices.json`:**
+
 ```json
 [
   {
@@ -156,13 +157,13 @@ Każdy komunikat potrzebuje `id` (do śledzenia odrzuconych w localStorage), `ty
 
 ### Pliki do utworzenia
 
-| Plik | Co robi |
-|---|---|
+| Plik                   | Co robi                                                               |
+| ---------------------- | --------------------------------------------------------------------- |
 | `prisma/schema.prisma` | Schema bazy: modele Document, Chunk, Conversation, Message, RateLimit |
-| `prisma/migrations/` | Automatycznie generowane przez `prisma migrate dev` |
-| `src/lib/db.ts` | Singleton Prisma Client (globalny, bezpieczny w Next.js dev) |
-| `src/lib/chunker.ts` | Podział plików `.md` na chunki (~500–800 tokenów, overlap ~100) |
-| `scripts/seed.ts` | Czyta `content/**/*.md`, chunkuje, zapisuje do bazy (idempotentny) |
+| `prisma/migrations/`   | Automatycznie generowane przez `prisma migrate dev`                   |
+| `src/lib/db.ts`        | Singleton Prisma Client (globalny, bezpieczny w Next.js dev)          |
+| `src/lib/chunker.ts`   | Podział plików `.md` na chunki (~500–800 tokenów, overlap ~100)       |
+| `scripts/seed.ts`      | Czyta `content/**/*.md`, chunkuje, zapisuje do bazy (idempotentny)    |
 
 ### Schema bazy (Prisma)
 
@@ -220,11 +221,11 @@ tsvector_update_trigger(search_vector, 'pg_catalog.simple', content);
 
 ### Pliki do utworzenia
 
-| Plik | Co robi |
-|---|---|
-| `src/lib/prompts.ts` | System prompt — instruuje LLM jak odpowiadać na pytania o Mangetsu |
-| `src/lib/search.ts` | FTS helper — rozbija query na tokeny, zwraca top 6 chunków przez `$queryRaw` |
-| `src/app/api/chat/route.ts` | POST handler — cały pipeline RAG |
+| Plik                        | Co robi                                                                      |
+| --------------------------- | ---------------------------------------------------------------------------- |
+| `src/lib/prompts.ts`        | System prompt — instruuje LLM jak odpowiadać na pytania o Mangetsu           |
+| `src/lib/search.ts`         | FTS helper — rozbija query na tokeny, zwraca top 6 chunków przez `$queryRaw` |
+| `src/app/api/chat/route.ts` | POST handler — cały pipeline RAG                                             |
 
 ### Pipeline w `POST /api/chat`
 
@@ -259,10 +260,10 @@ Body: { message: string, sessionId: string }
 
 ### Pliki do zmiany
 
-| Plik | Co się zmienia |
-|---|---|
+| Plik                               | Co się zmienia                                                          |
+| ---------------------------------- | ----------------------------------------------------------------------- |
 | `src/components/chat/ChatView.tsx` | `fetch('/api/chat')` zamiast mock, obsługa błędów przez `notifyError()` |
-| `src/store/chatStore.ts` | `requestsUsed` aktualizowany z odpowiedzi API (nie tylko lokalnie) |
+| `src/store/chatStore.ts`           | `requestsUsed` aktualizowany z odpowiedzi API (nie tylko lokalnie)      |
 
 ### Zadania
 
@@ -288,14 +289,14 @@ Body: { message: string, sessionId: string }
 
 ### Pliki do zmiany
 
-| Plik | Co się zmienia |
-|---|---|
-| `prisma/schema.prisma` | Dodać `embedding Unsupported("vector(4096)")` do modelu `Chunk` |
-| `prisma/migrations/` | Dwie migracje: `add_embeddings` (vector(1024) + pgvector ext) + `resize_embedding_4096` (ALTER TYPE) |
-| `.env.example` | Dodać `OVH_AI_EMBEDDING_ENDPOINT` |
-| `src/server/ai/embeddings.ts` | Nowy plik — klient embeddingów (OpenAI-compatible, `input` → `number[]`) |
-| `src/modules/search/utils/search.ts` | Hybrid search: FTS + `runEmbedding()` z cosine similarity, wyniki mergowane wagowo |
-| `scripts/seed.ts` | Generować embedding per chunk przy indeksowaniu, zapisywać do kolumny `embedding` |
+| Plik                                 | Co się zmienia                                                                                       |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| `prisma/schema.prisma`               | Dodać `embedding Unsupported("vector(4096)")` do modelu `Chunk`                                      |
+| `prisma/migrations/`                 | Dwie migracje: `add_embeddings` (vector(1024) + pgvector ext) + `resize_embedding_4096` (ALTER TYPE) |
+| `.env.example`                       | Dodać `OVH_AI_EMBEDDING_ENDPOINT`                                                                    |
+| `src/server/ai/embeddings.ts`        | Nowy plik — klient embeddingów (OpenAI-compatible, `input` → `number[]`)                             |
+| `src/modules/search/utils/search.ts` | Hybrid search: FTS + `runEmbedding()` z cosine similarity, wyniki mergowane wagowo                   |
+| `scripts/seed.ts`                    | Generować embedding per chunk przy indeksowaniu, zapisywać do kolumny `embedding`                    |
 
 ### Schema — zmiana w modelu Chunk
 
@@ -339,18 +340,18 @@ model Chunk {
 
 ## Decyzje — podjęte
 
-| # | Pytanie | Decyzja |
-|---|---------|---------|
-| 1 | Renderowanie markdown | `react-markdown` — używane w docs panelu **i** w bąbelkach czatu (odpowiedzi AI) |
-| 2 | Nazwa koloru w Mantine | `mangetsu` |
-| 3 | Logo w topbarze | Tekst nieselektowalny (`user-select: none`) |
-| 4 | Wyszukiwanie chunków | PostgreSQL full-text search (tsvector) — FTS przez `prisma.$queryRaw` |
-| 5 | Odpowiedź API | Jednorazowa (nie streaming) — prostsze, typing indicator zostaje |
-| 6 | Rate limiting | Per IP z nagłówka `X-Forwarded-For` |
-| 7 | ORM | Prisma — typy z automatu, migracje przez CLI |
-| 8 | Embedding model | `Qwen3-Embedding-8B` (OVH AI Endpoints) — wymiary 4096 (domyślne) |
-| 9 | Hybrid search merge | RRF (Reciprocal Rank Fusion, k=60) — lepszy niż ważone summy bo nie wymaga normalizacji |
-| 10 | Brak HNSW index | pgvector HNSW max 2000 dims, mamy 4096 — sequential scan wystarczy przy ~100-200 chunkach |
+| #   | Pytanie                | Decyzja                                                                                   |
+| --- | ---------------------- | ----------------------------------------------------------------------------------------- |
+| 1   | Renderowanie markdown  | `react-markdown` — używane w docs panelu **i** w bąbelkach czatu (odpowiedzi AI)          |
+| 2   | Nazwa koloru w Mantine | `mangetsu`                                                                                |
+| 3   | Logo w topbarze        | Tekst nieselektowalny (`user-select: none`)                                               |
+| 4   | Wyszukiwanie chunków   | PostgreSQL full-text search (tsvector) — FTS przez `prisma.$queryRaw`                     |
+| 5   | Odpowiedź API          | Jednorazowa (nie streaming) — prostsze, typing indicator zostaje                          |
+| 6   | Rate limiting          | Per IP z nagłówka `X-Forwarded-For`                                                       |
+| 7   | ORM                    | Prisma — typy z automatu, migracje przez CLI                                              |
+| 8   | Embedding model        | `Qwen3-Embedding-8B` (OVH AI Endpoints) — wymiary 4096 (domyślne)                         |
+| 9   | Hybrid search merge    | RRF (Reciprocal Rank Fusion, k=60) — lepszy niż ważone summy bo nie wymaga normalizacji   |
+| 10  | Brak HNSW index        | pgvector HNSW max 2000 dims, mamy 4096 — sequential scan wystarczy przy ~100-200 chunkach |
 
 ---
 
