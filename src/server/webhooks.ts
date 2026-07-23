@@ -1,7 +1,13 @@
 const WEBHOOK_BASE_URL = process.env.N8N_WEBHOOK_BASE_URL
+const WEBHOOK_SECRET = process.env.N8N_WEBHOOK_SECRET
 
 const ROLE_ACTIVATION_WEBHOOK_PATH = 'a5ef7246-402a-4d2c-a083-089e5872436e'
 const USER_DELETION_WEBHOOK_PATH = '9fd60ced-e4d4-4fdf-be5d-721e00fb1165'
+
+const webhookHeaders = {
+  'Content-Type': 'application/json',
+  'X-Webhook-Authorization': WEBHOOK_SECRET ?? '',
+}
 
 interface RoleActivationPayload {
   id: string
@@ -13,7 +19,7 @@ interface RoleActivationPayload {
 export async function notifyRoleActivation(payload: RoleActivationPayload): Promise<void> {
   const res = await fetch(`${WEBHOOK_BASE_URL}/${ROLE_ACTIVATION_WEBHOOK_PATH}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: webhookHeaders,
     body: JSON.stringify(payload),
   })
 
@@ -30,7 +36,7 @@ interface UserDeletionPayload {
 export async function notifyUserDeletion(payload: UserDeletionPayload): Promise<void> {
   const res = await fetch(`${WEBHOOK_BASE_URL}/${USER_DELETION_WEBHOOK_PATH}`, {
     method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' },
+    headers: webhookHeaders,
     body: JSON.stringify(payload),
   })
 
