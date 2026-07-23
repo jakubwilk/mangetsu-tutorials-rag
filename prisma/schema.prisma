@@ -54,10 +54,71 @@ model Message {
 
 model RateLimit {
   id          String   @id @default(uuid())
-  ip          String
+  userId      String
   requestDate DateTime @db.Date
   count       Int      @default(0)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([ip, requestDate])
+  @@unique([userId, requestDate])
   @@map("rate_limits")
+}
+
+enum Role {
+  GUEST
+  USER
+  EDITOR
+  ROOT
+}
+
+model User {
+  id            String      @id @default(uuid())
+  name          String?
+  email         String?     @unique
+  emailVerified DateTime?
+  image         String?
+  role          Role        @default(GUEST)
+  createdAt     DateTime    @default(now())
+  accounts      Account[]
+  sessions      Session[]
+  rateLimits    RateLimit[]
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(uuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@id([identifier, token])
+  @@map("verification_tokens")
 }

@@ -19,6 +19,10 @@
       }
     ],
     "paths": {
+      "admin": ["./src/modules/admin/index"],
+      "admin/*": ["./src/modules/admin/*"],
+      "auth": ["./src/modules/auth/index"],
+      "auth/*": ["./src/modules/auth/*"],
       "chat": ["./src/modules/chat/index"],
       "chat/*": ["./src/modules/chat/*"],
       "notices": ["./src/modules/notices/index"],
