@@ -13,11 +13,10 @@ import {
 } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { IconPlus } from '@tabler/icons-react'
+import type { SourceMethod } from 'common/api'
+import { submitSource } from 'common/api'
+import { notifyError, notifyInfo } from 'common/utils'
 import { useState } from 'react'
-
-import { submitSource } from 'common/api/sources'
-import type { SourceMethod } from 'common/api/sources'
-import { notifyError, notifyInfo } from 'common/utils/notifications'
 
 export default function AddSourceModal() {
   const [opened, { open, close }] = useDisclosure(false)

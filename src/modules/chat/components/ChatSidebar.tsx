@@ -3,7 +3,7 @@
 import { Box, Button, Divider, Group, Stack, Text, UnstyledButton } from '@mantine/core'
 import { useSyncExternalStore } from 'react'
 
-import { chatStore } from 'chat/store'
+import { chatStore } from '../store'
 
 const PANEL_WIDTH = { width: '20vw', maxWidth: 300, flexShrink: 0 }
 
@@ -18,7 +18,7 @@ interface ChatSidebarProps {
 }
 
 export default function ChatSidebar({ fluid = false }: ChatSidebarProps) {
-  const { sessions, activeSessionId, requestsUsed } = useSyncExternalStore(
+  const { sessions, activeSessionId, requestsUsed, requestLimit } = useSyncExternalStore(
     chatStore.subscribe,
     chatStore.getSnapshot,
     chatStore.getServerSnapshot,
@@ -86,7 +86,7 @@ export default function ChatSidebar({ fluid = false }: ChatSidebarProps) {
         </Text>
         <Group gap="xs" mt={4} align="baseline">
           <Text fw={700} size="sm" c="mangetsu.4">
-            {requestsUsed}/{chatStore.requestLimit}
+            {requestsUsed}/{requestLimit}
           </Text>
           <Text size="xs" c="dimmed">
             wykorzystanych

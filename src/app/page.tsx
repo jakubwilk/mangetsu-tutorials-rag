@@ -1,6 +1,6 @@
-import { ChatView } from 'chat'
+import { ChatSidebar, ChatView } from 'chat'
+import { AppLayout, DocsPanel, Topbar } from 'common'
 import { readFile } from 'fs/promises'
-import { AppLayout, ChatSidebar, DocsPanel, Topbar } from 'common'
 import path from 'path'
 
 export default async function Home() {

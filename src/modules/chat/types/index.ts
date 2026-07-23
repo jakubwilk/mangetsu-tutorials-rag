@@ -1,11 +1,2 @@
-export interface Message {
-  id: string
-  role: 'user' | 'assistant'
-  content: string
-}
-
-export interface ChatSession {
-  id: string
-  messages: Message[]
-  createdAt: number
-}
+export type { ChatSession, Message } from './message'
+export type { ChatStreamEvent } from './streamEvent'
