@@ -1,6 +1,6 @@
 export { default as DocsPanel } from './DocsPanel'
-export { default as Logo } from './Logo'
 export { default as AppLayout } from './layout/AppLayout'
+export { default as Logo } from './Logo'
 export { default as AddSourceModal } from './modals/AddSourceModal'
 export { default as MobileNavBar } from './navigation/MobileNavBar'
 export { default as Topbar } from './navigation/Topbar'

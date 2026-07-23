@@ -1,8 +1,6 @@
-import { Box, Button, Group, Stack, Text } from '@mantine/core'
-import { IconArrowLeft } from '@tabler/icons-react'
+import { Box, Stack, Text } from '@mantine/core'
 import type { AdminUser } from 'admin'
-import { UsersTable } from 'admin'
-import Link from 'next/link'
+import { AdminHeader, UsersTable } from 'admin'
 import { notFound } from 'next/navigation'
 import { auth } from 'server/auth'
 import { db } from 'server/db'
@@ -22,9 +20,10 @@ export default async function AdminPage() {
   }))
 
   return (
-    <Box p="xl">
-      <Stack gap="lg">
-        <Group justify="space-between" align="flex-start">
+    <div className="flex h-full flex-col">
+      <AdminHeader />
+      <Box p="xl" className="overflow-auto">
+        <Stack gap="lg">
           <div>
             <Text size="xl" fw={700}>
               Panel administracyjny
@@ -34,18 +33,9 @@ export default async function AdminPage() {
               bazie danych.
             </Text>
           </div>
-          <Button
-            component={Link}
-            href="/"
-            variant="subtle"
-            color="gray"
-            leftSection={<IconArrowLeft size={16} />}
-          >
-            Powrót do czatu
-          </Button>
-        </Group>
-        <UsersTable users={adminUsers} />
-      </Stack>
-    </Box>
+          <UsersTable users={adminUsers} />
+        </Stack>
+      </Box>
+    </div>
   )
 }

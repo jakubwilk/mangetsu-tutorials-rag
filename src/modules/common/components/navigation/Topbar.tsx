@@ -5,8 +5,8 @@ import { NoticesPopover } from 'notices'
 import { auth } from 'server/auth'
 import { loadNotices } from 'server/notices'
 
-import AddSourceModal from '../modals/AddSourceModal'
 import Logo from '../Logo'
+import AddSourceModal from '../modals/AddSourceModal'
 
 const FORUM_URL = process.env.NEXT_PUBLIC_FORUM_URL ?? '#'
 
