@@ -1,18 +1,15 @@
-const WEBHOOK_URL =
-  'https://www.ai-automation.underwolfstudio.com/api/v1/webhooks/jIDUu3uWqUE6Dudvk0IkR/sync'
-
 export type SourceMethod = 'URL' | 'CONTENT'
 
 export const submitSource = async (method: SourceMethod, data: string): Promise<string> => {
-  const res = await fetch(WEBHOOK_URL, {
+  const res = await fetch('/api/sources', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ method, data }),
   })
 
-  const json = (await res.json()) as { status: number; message: string }
+  const json = (await res.json()) as { message?: string; error?: string }
 
-  if (!res.ok) throw new Error(json.message)
+  if (!res.ok) throw new Error(json.error ?? 'Nie udało się dodać źródła.')
 
-  return json.message
+  return json.message ?? ''
 }

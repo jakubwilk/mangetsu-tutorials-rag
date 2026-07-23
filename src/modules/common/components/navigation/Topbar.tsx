@@ -1,14 +1,18 @@
-import { ActionIcon, Box, Group, Text } from '@mantine/core'
+import { ActionIcon, Box, Group } from '@mantine/core'
 import { IconExternalLink } from '@tabler/icons-react'
+import { UserMenu } from 'auth'
 import { NoticesPopover } from 'notices'
+import { auth } from 'server/auth'
 import { loadNotices } from 'server/notices'
 
 import AddSourceModal from '../modals/AddSourceModal'
+import Logo from '../Logo'
 
 const FORUM_URL = process.env.NEXT_PUBLIC_FORUM_URL ?? '#'
 
 export default async function Topbar() {
-  const notices = await loadNotices()
+  const [notices, session] = await Promise.all([loadNotices(), auth()])
+  const canEdit = session?.user.role === 'EDITOR' || session?.user.role === 'ROOT'
 
   return (
     <Box
@@ -21,17 +25,9 @@ export default async function Topbar() {
       }}
     >
       <Group justify="space-between" className="w-full">
-        <Text c="mangetsu.4" className="leading-none select-none">
-          <span
-            style={{ fontFamily: 'Times New Roman, serif' }}
-            className="text-[1.75rem] font-normal"
-          >
-            mangetsu
-          </span>
-          <span className="text-[0.85rem] font-bold tracking-wider text-white"> RAG</span>
-        </Text>
+        <Logo />
         <Group gap="xs">
-          <AddSourceModal />
+          {canEdit && <AddSourceModal />}
           <NoticesPopover notices={notices} />
           <ActionIcon
             component="a"
@@ -46,6 +42,13 @@ export default async function Topbar() {
           >
             <IconExternalLink size={20} />
           </ActionIcon>
+          {session && (
+            <UserMenu
+              name={session.user.name ?? null}
+              image={session.user.image ?? null}
+              role={session.user.role}
+            />
+          )}
         </Group>
       </Group>
     </Box>
