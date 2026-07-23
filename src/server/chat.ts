@@ -43,9 +43,12 @@ export function getRequestDate(): Date {
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
 }
 
-export async function checkRateLimit(ip: string, requestDate: Date): Promise<NextResponse | null> {
+export async function checkRateLimit(
+  userId: string,
+  requestDate: Date,
+): Promise<NextResponse | null> {
   const rateLimit = await db.rateLimit.findUnique({
-    where: { ip_requestDate: { ip, requestDate } },
+    where: { userId_requestDate: { userId, requestDate } },
   })
 
   if (rateLimit && rateLimit.count >= DAILY_LIMIT) {
@@ -94,11 +97,20 @@ export function createChatStream(params: {
   history: ChatMessage[]
   existingConversationId: string | undefined
   sessionId: string
+  userId: string
   ip: string
   requestDate: Date
 }): ReadableStream {
-  const { searchQuery, systemPrompt, history, existingConversationId, sessionId, ip, requestDate } =
-    params
+  const {
+    searchQuery,
+    systemPrompt,
+    history,
+    existingConversationId,
+    sessionId,
+    userId,
+    ip,
+    requestDate,
+  } = params
 
   return new ReadableStream({
     async start(controller) {
@@ -141,8 +153,8 @@ export function createChatStream(params: {
         })
 
         const updatedRateLimit = await db.rateLimit.upsert({
-          where: { ip_requestDate: { ip, requestDate } },
-          create: { ip, requestDate, count: 1 },
+          where: { userId_requestDate: { userId, requestDate } },
+          create: { userId, requestDate, count: 1 },
           update: { count: { increment: 1 } },
         })
 
