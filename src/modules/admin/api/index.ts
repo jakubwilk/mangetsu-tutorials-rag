@@ -1,0 +1,1 @@
+export { updateUserRole } from './updateUserRole'
