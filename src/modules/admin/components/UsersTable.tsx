@@ -63,6 +63,11 @@ export default function UsersTable({ users: initialUsers }: UsersTableProps) {
   const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null)
   const [deleting, setDeleting] = useState(false)
 
+  const columnFilters = useMemo(
+    () => (roleFilter ? [{ id: 'role', value: roleFilter }] : []),
+    [roleFilter],
+  )
+
   const handleRoleChange = async (userId: string, role: string | null) => {
     if (!role || role === 'ROOT') return
 
@@ -80,23 +85,6 @@ export default function UsersTable({ users: initialUsers }: UsersTableProps) {
       notifyError(err instanceof Error ? err.message : 'Nie udało się zmienić roli.')
     } finally {
       setPendingId(null)
-    }
-  }
-
-  const handleDeleteConfirm = async (userId: string, notify: boolean) => {
-    setDeleting(true)
-    try {
-      const { webhookOk } = await deleteUser(userId, notify)
-      setUsers((prev) => prev.filter((u) => u.id !== userId))
-      notifyInfo('Użytkownik został usunięty.')
-      if (!webhookOk) {
-        notifyWarning('Użytkownik został usunięty, ale powiadomienie webhooka nie zostało wysłane.')
-      }
-      setDeleteTarget(null)
-    } catch (err) {
-      notifyError(err instanceof Error ? err.message : 'Nie udało się usunąć użytkownika.')
-    } finally {
-      setDeleting(false)
     }
   }
 
@@ -180,11 +168,6 @@ export default function UsersTable({ users: initialUsers }: UsersTableProps) {
     [pendingId],
   )
 
-  const columnFilters = useMemo(
-    () => (roleFilter ? [{ id: 'role', value: roleFilter }] : []),
-    [roleFilter],
-  )
-
   const table = useReactTable({
     data: users,
     columns,
@@ -200,6 +183,23 @@ export default function UsersTable({ users: initialUsers }: UsersTableProps) {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
   })
+
+  const handleDeleteConfirm = async (userId: string, notify: boolean) => {
+    setDeleting(true)
+    try {
+      const { webhookOk } = await deleteUser(userId, notify)
+      setUsers((prev) => prev.filter((u) => u.id !== userId))
+      notifyInfo('Użytkownik został usunięty.')
+      if (!webhookOk) {
+        notifyWarning('Użytkownik został usunięty, ale powiadomienie webhooka nie zostało wysłane.')
+      }
+      setDeleteTarget(null)
+    } catch (err) {
+      notifyError(err instanceof Error ? err.message : 'Nie udało się usunąć użytkownika.')
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   const sortIcon = (direction: false | 'asc' | 'desc') => {
     if (direction === 'asc') return <IconArrowUp size={14} />

@@ -1,8 +1,8 @@
 const WEBHOOK_BASE_URL = process.env.N8N_WEBHOOK_BASE_URL
 const WEBHOOK_SECRET = process.env.N8N_WEBHOOK_SECRET
 
-const ROLE_ACTIVATION_WEBHOOK_PATH = 'a5ef7246-402a-4d2c-a083-089e5872436e'
-const USER_DELETION_WEBHOOK_PATH = '9fd60ced-e4d4-4fdf-be5d-721e00fb1165'
+const ROLE_ACTIVATION_WEBHOOK_PATH = process.env.N8N_ROLE_ACTIVATION_WEBHOOK_PATH
+const USER_DELETION_WEBHOOK_PATH = process.env.N8N_USER_DELETION_WEBHOOK_PATH
 
 const webhookHeaders = {
   'Content-Type': 'application/json',

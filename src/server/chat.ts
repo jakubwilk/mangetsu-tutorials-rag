@@ -5,13 +5,10 @@ import { buildSystemPrompt } from 'server/prompts'
 
 import { openai } from './ai'
 
-const DAILY_LIMIT = parseInt(process.env.DAILY_REQUEST_LIMIT ?? '20', 10)
+export const DAILY_LIMIT = parseInt(process.env.DAILY_REQUEST_LIMIT ?? '20', 10)
 
 const STAT_ADVANCEMENT_PATTERN =
   /zwi[eę]kszy[ćc]|ulepsz|awanso|wykupi[ćc]|rozwin|podbij|podnie[sś][ćc]|rang[aąię]|poziom|statystyk[aąię]/i
-
-const INJECTION_PATTERN =
-  /ignore\s+(previous\s+)?instructions?|zapomnij\s+(poprzednie\s+)?instrukcj|zignoruj\s+zasady|jeste[sś]\s+teraz|you\s+are\s+now|act\s+as\b|udawaj\s+[żz]e\s+jeste[sś]/i
 
 const MAX_MESSAGE_LENGTH = 1000
 
@@ -31,9 +28,6 @@ export function parseChatRequest(
   if (typeof sessionId !== 'string' || !sessionId.trim()) {
     return NextResponse.json({ error: "Pole 'sessionId' jest wymagane." }, { status: 400 })
   }
-  if (INJECTION_PATTERN.test(message)) {
-    return NextResponse.json({ error: 'Nieprawidłowe zapytanie.' }, { status: 400 })
-  }
 
   return { message: message.trim().slice(0, MAX_MESSAGE_LENGTH), sessionId }
 }
@@ -43,22 +37,39 @@ export function getRequestDate(): Date {
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
 }
 
-export async function checkRateLimit(
+async function releaseRateLimit(userId: string, requestDate: Date): Promise<void> {
+  try {
+    await db.rateLimit.update({
+      where: { userId_requestDate: { userId, requestDate } },
+      data: { count: { decrement: 1 } },
+    })
+  } catch {
+    // Best-effort compensation — a failure here just leaves the user one request short.
+  }
+}
+
+// Atomically increments the counter (Postgres upsert serializes on the row), then checks
+// the result. This closes the check-then-increment race that a plain read-then-write has:
+// concurrent requests can no longer all pass the check before any of them increments.
+export async function reserveRateLimit(
   userId: string,
   requestDate: Date,
-): Promise<NextResponse | null> {
-  const rateLimit = await db.rateLimit.findUnique({
+): Promise<{ count: number } | NextResponse> {
+  const rateLimit = await db.rateLimit.upsert({
     where: { userId_requestDate: { userId, requestDate } },
+    create: { userId, requestDate, count: 1 },
+    update: { count: { increment: 1 } },
   })
 
-  if (rateLimit && rateLimit.count >= DAILY_LIMIT) {
+  if (rateLimit.count > DAILY_LIMIT) {
+    await releaseRateLimit(userId, requestDate)
     return NextResponse.json(
       { error: 'Przekroczono dzienny limit zapytań. Spróbuj ponownie jutro.' },
       { status: 429 },
     )
   }
 
-  return null
+  return { count: rateLimit.count }
 }
 
 export async function buildPromptContext(searchQuery: string, sessionId: string) {
@@ -100,6 +111,7 @@ export function createChatStream(params: {
   userId: string
   ip: string
   requestDate: Date
+  requestsUsed: number
 }): ReadableStream {
   const {
     searchQuery,
@@ -110,6 +122,7 @@ export function createChatStream(params: {
     userId,
     ip,
     requestDate,
+    requestsUsed,
   } = params
 
   return new ReadableStream({
@@ -152,14 +165,9 @@ export function createChatStream(params: {
           ],
         })
 
-        const updatedRateLimit = await db.rateLimit.upsert({
-          where: { userId_requestDate: { userId, requestDate } },
-          create: { userId, requestDate, count: 1 },
-          update: { count: { increment: 1 } },
-        })
-
-        controller.enqueue(sseEvent({ type: 'done', requestsUsed: updatedRateLimit.count }))
+        controller.enqueue(sseEvent({ type: 'done', requestsUsed }))
       } catch (err) {
+        await releaseRateLimit(userId, requestDate)
         const detail = err instanceof Error ? err.message : 'Nieznany błąd'
         controller.enqueue(
           sseEvent({ type: 'error', message: `Błąd połączenia z modelem AI: ${detail}` }),

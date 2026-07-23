@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { requireRole } from 'server/authorize'
-import { getRequestDate } from 'server/chat'
+import { DAILY_LIMIT, getRequestDate } from 'server/chat'
 import { db } from 'server/db'
 
 export async function GET() {
@@ -15,7 +15,7 @@ export async function GET() {
       where: { userId_requestDate: { userId: session.user.id, requestDate } },
     })
 
-    return NextResponse.json({ requestsUsed: rateLimit?.count ?? 0 })
+    return NextResponse.json({ requestsUsed: rateLimit?.count ?? 0, limit: DAILY_LIMIT })
   } catch {
     return NextResponse.json({ error: 'Service unavailable' }, { status: 503 })
   }

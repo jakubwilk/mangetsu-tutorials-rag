@@ -13,14 +13,17 @@ interface StoreSnapshot {
   sessions: ChatSession[]
   activeSessionId: string
   requestsUsed: number
+  requestLimit: number
 }
 
-const REQUEST_LIMIT = 10
+// Fallback until fetchRateLimit() resolves — matches the server's default DAILY_REQUEST_LIMIT.
+const DEFAULT_REQUEST_LIMIT = 20
 
 const SERVER_SNAPSHOT: StoreSnapshot = {
   sessions: [],
   activeSessionId: '',
   requestsUsed: 0,
+  requestLimit: DEFAULT_REQUEST_LIMIT,
 }
 
 let snapshot: StoreSnapshot = SERVER_SNAPSHOT
@@ -41,9 +44,14 @@ function loadFromStorage(): StoreSnapshot {
     const record: RequestsRecord = raw ? JSON.parse(raw) : { date: todayStr, count: 0 }
     const requestsUsed = record.date === todayStr ? record.count : 0
 
-    return { sessions, activeSessionId, requestsUsed }
+    return { sessions, activeSessionId, requestsUsed, requestLimit: DEFAULT_REQUEST_LIMIT }
   } catch {
-    return { sessions: [], activeSessionId: '', requestsUsed: 0 }
+    return {
+      sessions: [],
+      activeSessionId: '',
+      requestsUsed: 0,
+      requestLimit: DEFAULT_REQUEST_LIMIT,
+    }
   }
 }
 
@@ -155,6 +163,11 @@ export const chatStore = {
     notify()
   },
 
+  setRequestLimit(limit: number) {
+    snapshot = { ...snapshot, requestLimit: limit }
+    notify()
+  },
+
   getActiveSession(): ChatSession | undefined {
     return snapshot.sessions.find((s) => s.id === snapshot.activeSessionId)
   },
@@ -179,9 +192,5 @@ export const chatStore = {
     snapshot = { ...snapshot, sessions, activeSessionId }
     persistSessions(sessions)
     notify()
-  },
-
-  get requestLimit() {
-    return REQUEST_LIMIT
   },
 }

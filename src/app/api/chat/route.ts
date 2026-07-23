@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireRole, verifyOrigin } from 'server/authorize'
 import {
   buildPromptContext,
-  checkRateLimit,
   createChatStream,
   getRequestDate,
   parseChatRequest,
+  reserveRateLimit,
 } from 'server/chat'
+import { isPromptInjection } from 'server/guardrails'
 
 export async function POST(request: NextRequest) {
   const originError = verifyOrigin(request)
@@ -30,13 +31,21 @@ export async function POST(request: NextRequest) {
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
   const requestDate = getRequestDate()
 
-  const rateLimitError = await checkRateLimit(session.user.id, requestDate)
-  if (rateLimitError) return rateLimitError
+  // Run the guardrail classification alongside RAG context building so its latency
+  // is hidden behind the existing search/embedding round-trip.
+  const [injectionDetected, context] = await Promise.all([
+    isPromptInjection(searchQuery),
+    buildPromptContext(searchQuery, sessionId),
+  ])
 
-  const { systemPrompt, history, existingConversationId } = await buildPromptContext(
-    searchQuery,
-    sessionId,
-  )
+  if (injectionDetected) {
+    return NextResponse.json({ error: 'Nieprawidłowe zapytanie.' }, { status: 400 })
+  }
+
+  const reservation = await reserveRateLimit(session.user.id, requestDate)
+  if (reservation instanceof NextResponse) return reservation
+
+  const { systemPrompt, history, existingConversationId } = context
 
   const stream = createChatStream({
     searchQuery,
@@ -47,6 +56,7 @@ export async function POST(request: NextRequest) {
     userId: session.user.id,
     ip,
     requestDate,
+    requestsUsed: reservation.count,
   })
 
   return new Response(stream, {

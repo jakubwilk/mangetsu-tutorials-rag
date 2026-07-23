@@ -16,7 +16,7 @@ import ChatInput from './ChatInput'
 import MessageList from './MessageList'
 
 export default function ChatView() {
-  const { sessions, activeSessionId, requestsUsed } = useSyncExternalStore(
+  const { sessions, activeSessionId, requestsUsed, requestLimit } = useSyncExternalStore(
     chatStore.subscribe,
     chatStore.getSnapshot,
     chatStore.getServerSnapshot,
@@ -31,7 +31,7 @@ export default function ChatView() {
 
   const sendMessage = useCallback(
     async (text: string) => {
-      if (!text.trim() || isLoading || requestsUsed >= chatStore.requestLimit) return
+      if (!text.trim() || isLoading || requestsUsed >= requestLimit) return
 
       chatStore.addMessage({ id: crypto.randomUUID(), role: 'user', content: text.trim() })
       setIsLoading(true)
@@ -68,7 +68,7 @@ export default function ChatView() {
       } catch (err) {
         if (err instanceof ChatRequestError && err.status === 429) {
           notifyError(err.message)
-          chatStore.setRequestsUsed(chatStore.requestLimit)
+          chatStore.setRequestsUsed(requestLimit)
         } else if (err instanceof ChatRequestError) {
           notifyError(err.message)
         } else {
@@ -78,7 +78,7 @@ export default function ChatView() {
         setIsLoading(false)
       }
     },
-    [isLoading, requestsUsed, activeSessionId],
+    [isLoading, requestsUsed, requestLimit, activeSessionId],
   )
 
   useEffect(() => {
@@ -90,9 +90,10 @@ export default function ChatView() {
       .map((s) => s.id)
 
     Promise.all([validateSessions(ids), fetchRateLimit()])
-      .then(([valid, requestsUsed]) => {
+      .then(([valid, rateLimit]) => {
         if (ids.length > 0) chatStore.pruneInvalidSessions(valid)
-        chatStore.setRequestsUsed(requestsUsed)
+        chatStore.setRequestsUsed(rateLimit.requestsUsed)
+        chatStore.setRequestLimit(rateLimit.limit)
       })
       .catch(() => setIsDbError(true))
       .finally(() => setIsValidating(false))
@@ -120,10 +121,7 @@ export default function ChatView() {
           Nie można połączyć się z bazą danych. Czat jest tymczasowo wyłączony.
         </Alert>
       ) : (
-        <ChatInput
-          onSend={sendMessage}
-          disabled={isLoading || requestsUsed >= chatStore.requestLimit}
-        />
+        <ChatInput onSend={sendMessage} disabled={isLoading || requestsUsed >= requestLimit} />
       )}
     </Box>
   )
