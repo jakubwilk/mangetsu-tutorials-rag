@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireRole } from 'server/authorize'
+import { requireRole, verifyOrigin } from 'server/authorize'
 import {
   buildPromptContext,
   checkRateLimit,
@@ -9,6 +9,9 @@ import {
 } from 'server/chat'
 
 export async function POST(request: NextRequest) {
+  const originError = verifyOrigin(request)
+  if (originError) return originError
+
   const authResult = await requireRole(['USER', 'EDITOR', 'ROOT'])
   if (authResult instanceof NextResponse) return authResult
   const { session } = authResult

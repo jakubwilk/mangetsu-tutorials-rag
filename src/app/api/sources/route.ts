@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireRole } from 'server/authorize'
+import { requireRole, verifyOrigin } from 'server/authorize'
 import { type SourceMethod, submitSourceToWebhook } from 'server/sources'
 
 export async function POST(request: NextRequest) {
+  const originError = verifyOrigin(request)
+  if (originError) return originError
+
   const authResult = await requireRole(['EDITOR', 'ROOT'])
   if (authResult instanceof NextResponse) return authResult
 

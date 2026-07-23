@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireRole } from 'server/authorize'
+import { requireRole, verifyOrigin } from 'server/authorize'
 import { db } from 'server/db'
 import { notifyRoleActivation, notifyUserDeletion } from 'server/webhooks'
 
 const ASSIGNABLE_ROLES = ['GUEST', 'USER', 'EDITOR'] as const
 
 export async function PATCH(request: NextRequest, ctx: RouteContext<'/api/admin/users/[id]'>) {
+  const originError = verifyOrigin(request)
+  if (originError) return originError
+
   const authResult = await requireRole(['ROOT'])
   if (authResult instanceof NextResponse) return authResult
 
@@ -52,6 +55,9 @@ export async function PATCH(request: NextRequest, ctx: RouteContext<'/api/admin/
 }
 
 export async function DELETE(request: NextRequest, ctx: RouteContext<'/api/admin/users/[id]'>) {
+  const originError = verifyOrigin(request)
+  if (originError) return originError
+
   const authResult = await requireRole(['ROOT'])
   if (authResult instanceof NextResponse) return authResult
 
