@@ -1,15 +1,18 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
+import { requireRole } from 'server/authorize'
+import { getRequestDate } from 'server/chat'
 import { db } from 'server/db'
 
-export async function GET(request: NextRequest) {
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+export async function GET() {
+  const authResult = await requireRole(['USER', 'EDITOR', 'ROOT'])
+  if (authResult instanceof NextResponse) return authResult
+  const { session } = authResult
 
-  const now = new Date()
-  const requestDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
+  const requestDate = getRequestDate()
 
   try {
     const rateLimit = await db.rateLimit.findUnique({
-      where: { ip_requestDate: { ip, requestDate } },
+      where: { userId_requestDate: { userId: session.user.id, requestDate } },
     })
 
     return NextResponse.json({ requestsUsed: rateLimit?.count ?? 0 })

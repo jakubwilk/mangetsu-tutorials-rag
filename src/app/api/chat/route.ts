@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireRole } from 'server/authorize'
 import {
   buildPromptContext,
   checkRateLimit,
@@ -8,6 +9,10 @@ import {
 } from 'server/chat'
 
 export async function POST(request: NextRequest) {
+  const authResult = await requireRole(['USER', 'EDITOR', 'ROOT'])
+  if (authResult instanceof NextResponse) return authResult
+  const { session } = authResult
+
   let body: Record<string, unknown>
   try {
     body = await request.json()
@@ -22,7 +27,7 @@ export async function POST(request: NextRequest) {
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
   const requestDate = getRequestDate()
 
-  const rateLimitError = await checkRateLimit(ip, requestDate)
+  const rateLimitError = await checkRateLimit(session.user.id, requestDate)
   if (rateLimitError) return rateLimitError
 
   const { systemPrompt, history, existingConversationId } = await buildPromptContext(
@@ -36,6 +41,7 @@ export async function POST(request: NextRequest) {
     history,
     existingConversationId,
     sessionId,
+    userId: session.user.id,
     ip,
     requestDate,
   })

@@ -46,10 +46,23 @@ const mangetsu: MantineColorsTuple = [
   '#062e3c',
 ]
 
+const discord: MantineColorsTuple = [
+  '#e7e9fd',
+  '#cbcffb',
+  '#aab0f8',
+  '#8690f6',
+  '#717cf4',
+  '#5865f2',
+  '#3d4cf0',
+  '#1729ed',
+  '#0f1fc7',
+  '#0b168e',
+]
+
 const theme = createTheme({
   fontFamily: 'var(--font-body), system-ui, sans-serif',
   fontFamilyMonospace: 'var(--font-geist-mono), monospace',
-  colors: { mangetsu },
+  colors: { mangetsu, discord },
   primaryColor: 'mangetsu',
   primaryShade: { light: 6, dark: 5 },
   defaultRadius: 'md',
