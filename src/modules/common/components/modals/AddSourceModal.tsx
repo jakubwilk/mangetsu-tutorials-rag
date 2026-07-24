@@ -1,15 +1,14 @@
 'use client'
 
 import {
-  ActionIcon,
   Button,
   Group,
+  Menu,
   Modal,
   SegmentedControl,
   Stack,
   Textarea,
   TextInput,
-  Tooltip,
 } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { IconPlus } from '@tabler/icons-react'
@@ -18,7 +17,11 @@ import { submitSource } from 'common/api'
 import { notifyError, notifyInfo } from 'common/utils'
 import { useState } from 'react'
 
-export default function AddSourceModal() {
+interface AddSourceModalProps {
+  asMenuItem?: boolean
+}
+
+export default function AddSourceModal({ asMenuItem }: AddSourceModalProps) {
   const [opened, { open, close }] = useDisclosure(false)
   const [method, setMethod] = useState<SourceMethod>('URL')
   const [data, setData] = useState('')
@@ -54,29 +57,22 @@ export default function AddSourceModal() {
 
   return (
     <>
-      <Button
-        variant="subtle"
-        color="gray"
-        size="sm"
-        leftSection={<IconPlus size={16} />}
-        onClick={open}
-        visibleFrom="md"
-      >
-        Dodaj źródło
-      </Button>
-
-      <Tooltip label="Dodaj źródło" hiddenFrom="md">
-        <ActionIcon
+      {asMenuItem ? (
+        <Menu.Item leftSection={<IconPlus size={16} />} onClick={open} hiddenFrom="md">
+          Dodaj źródło
+        </Menu.Item>
+      ) : (
+        <Button
           variant="subtle"
           color="gray"
-          size="xl"
-          aria-label="Dodaj źródło"
+          size="sm"
+          leftSection={<IconPlus size={16} />}
           onClick={open}
-          hiddenFrom="md"
+          visibleFrom="md"
         >
-          <IconPlus size={20} />
-        </ActionIcon>
-      </Tooltip>
+          Dodaj źródło
+        </Button>
+      )}
 
       <Modal opened={opened} onClose={handleClose} title="Dodaj źródło" centered size="md">
         <Stack gap="md">

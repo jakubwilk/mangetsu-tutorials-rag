@@ -5,7 +5,9 @@ import {
   Avatar,
   Badge,
   Group,
+  Paper,
   Select,
+  Stack,
   Table,
   Text,
   TextInput,
@@ -226,7 +228,7 @@ export default function UsersTable({ users: initialUsers }: UsersTableProps) {
           clearable
         />
       </Group>
-      <Table verticalSpacing="sm">
+      <Table verticalSpacing="sm" visibleFrom="md">
         <Table.Thead>
           {table.getHeaderGroups().map((headerGroup) => (
             <Table.Tr key={headerGroup.id}>
@@ -257,6 +259,66 @@ export default function UsersTable({ users: initialUsers }: UsersTableProps) {
           ))}
         </Table.Tbody>
       </Table>
+
+      <Stack hiddenFrom="md" gap="sm">
+        {table.getRowModel().rows.length === 0 ? (
+          <Text size="sm" c="dimmed" ta="center" py="md">
+            Brak wyników.
+          </Text>
+        ) : (
+          table.getRowModel().rows.map((row) => {
+            const user = row.original
+            return (
+              <Paper key={user.id} withBorder p="sm" radius="md">
+                <Group justify="space-between" wrap="nowrap" align="flex-start">
+                  <Group gap="sm" wrap="nowrap" style={{ minWidth: 0 }}>
+                    <Avatar
+                      src={user.image ?? undefined}
+                      alt={user.name ?? user.email ?? ''}
+                      radius="xl"
+                      size="sm"
+                    />
+                    <div style={{ minWidth: 0 }}>
+                      <Text size="sm" fw={500} truncate="end">
+                        {user.name ?? 'Bez nazwy'}
+                      </Text>
+                      <Text size="xs" c="dimmed" truncate="end">
+                        {user.email}
+                      </Text>
+                    </div>
+                  </Group>
+                  {user.role !== 'ROOT' && (
+                    <Tooltip label="Usuń użytkownika">
+                      <ActionIcon color="red" variant="subtle" onClick={() => setDeleteTarget(user)}>
+                        <IconTrash size={16} />
+                      </ActionIcon>
+                    </Tooltip>
+                  )}
+                </Group>
+                <Group justify="space-between" align="center" mt="sm">
+                  {user.role === 'ROOT' ? (
+                    <Badge color="mangetsu">Administrator</Badge>
+                  ) : (
+                    <Select
+                      data={ROLE_OPTIONS}
+                      value={user.role}
+                      onChange={(value) => handleRoleChange(user.id, value)}
+                      disabled={pendingId === user.id}
+                      size="xs"
+                      w={160}
+                      allowDeselect={false}
+                    />
+                  )}
+                  <Text size="xs" c="dimmed">
+                    {new Date(user.createdAt).toLocaleDateString('pl-PL')}
+                  </Text>
+                </Group>
+              </Paper>
+            )
+          })
+        )}
+      </Stack>
+
       <DeleteUserModal
         key={deleteTarget?.id}
         user={deleteTarget}
