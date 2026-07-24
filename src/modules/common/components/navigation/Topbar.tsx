@@ -39,6 +39,7 @@ export default async function Topbar() {
             size="xl"
             aria-label="Przejdź na forum"
             title="Przejdź na forum"
+            visibleFrom="md"
           >
             <IconExternalLink size={20} />
           </ActionIcon>
@@ -47,7 +48,10 @@ export default async function Topbar() {
               name={session.user.name ?? null}
               image={session.user.image ?? null}
               role={session.user.role}
-            />
+              forumUrl={FORUM_URL}
+            >
+              {canEdit && <AddSourceModal asMenuItem />}
+            </UserMenu>
           )}
         </Group>
       </Group>
