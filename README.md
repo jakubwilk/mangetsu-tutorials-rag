@@ -1,5 +1,7 @@
 # Mangetsu Tutorials RAG
 
+![Mangetsu RAG](https://jakubwilk.pl/images/mangetsu-rag.png)
+
 Prywatna aplikacja webowa do przeszukiwania poradników z forum Mangetsu przy użyciu LLM. Użytkownik zadaje pytania w języku naturalnym, aplikacja wyszukuje odpowiednie fragmenty poradników (hybrid search: full-text + embeddingi) i zwraca odpowiedź wygenerowaną przez model językowy.
 
 ## Funkcjonalności
@@ -17,16 +19,16 @@ Prywatna aplikacja webowa do przeszukiwania poradników z forum Mangetsu przy u�
 
 ## Stack technologiczny
 
-| Warstwa       | Technologia                                                     |
-| ------------- | ---------------------------------------------------------------- |
-| Frontend      | Next.js 16 (App Router), TypeScript                             |
-| UI            | Mantine v9, Tailwind CSS                                         |
-| Backend       | Next.js Route Handlers                                          |
-| Baza danych   | PostgreSQL + `pgvector` (FTS `tsvector`/`tsquery`, trigram, embeddingi) |
-| Auth          | NextAuth (Auth.js) v5 — Discord OAuth                            |
-| LLM/Embeddingi | OVH AI Endpoints                                                |
-| Automatyzacja | n8n (webhooki: aktywacja/usunięcie konta, dodawanie źródeł)      |
-| Hosting       | OVH VPS → Coolify + Nixpacks                                     |
+| Warstwa        | Technologia                                                             |
+| -------------- | ----------------------------------------------------------------------- |
+| Frontend       | Next.js 16 (App Router), TypeScript                                     |
+| UI             | Mantine v9, Tailwind CSS                                                |
+| Backend        | Next.js Route Handlers                                                  |
+| Baza danych    | PostgreSQL + `pgvector` (FTS `tsvector`/`tsquery`, trigram, embeddingi) |
+| Auth           | NextAuth (Auth.js) v5 — Discord OAuth                                   |
+| LLM/Embeddingi | OVH AI Endpoints                                                        |
+| Automatyzacja  | n8n (webhooki: aktywacja/usunięcie konta, dodawanie źródeł)             |
+| Hosting        | OVH VPS → Coolify + Nixpacks                                            |
 
 ## Architektura
 
