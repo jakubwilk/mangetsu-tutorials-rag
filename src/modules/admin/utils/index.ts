@@ -1,0 +1,1 @@
+export { maskEmail } from './maskEmail'

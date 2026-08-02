@@ -4,6 +4,7 @@ import { Avatar, Button, Group, Modal, Stack, Switch, Text } from '@mantine/core
 import { useState } from 'react'
 
 import type { AdminUser } from '../types'
+import { maskEmail } from '../utils'
 
 interface DeleteUserModalProps {
   user: AdminUser | null
@@ -36,7 +37,7 @@ export default function DeleteUserModal({
                 {user.name ?? 'Bez nazwy'}
               </Text>
               <Text size="xs" c="dimmed">
-                {user.email}
+                {maskEmail(user.email)}
               </Text>
             </div>
           </Group>

@@ -132,33 +132,27 @@ const mergeHybrid = (
     .map(({ result }) => result)
 }
 
-// After the hybrid merge, append the next sequential chunks for documents that appear
-// more than once in the results. A repeated document means the whole document is relevant
-// (e.g. both chunk[0] and chunk[2] of Poziomy Klatw rank in the top 5 → expand to also
-// include chunk[1]). Single-appearance documents are tangential hits and are not expanded,
-// which avoids inflating the prompt with irrelevant adjacent chunks.
-const expandWithNextChunks = async (results: SearchResult[]): Promise<SearchResult[]> => {
+// After the hybrid merge, pull in every remaining chunk of any document that has at least
+// one chunk in the results. A single hit is often just one section of a multi-section
+// document (e.g. one stat out of five in "Statystyki") — without the rest, the LLM only
+// sees a partial picture and produces incomplete answers to broad questions. The corpus is
+// small (~20 docs, ~6 chunks/doc on average), so pulling a whole document is cheap.
+const expandToFullDocuments = async (results: SearchResult[]): Promise<SearchResult[]> => {
   if (results.length === 0) return results
 
   const resultIds = results.map((r) => r.id)
 
   const meta = await db.chunk.findMany({
     where: { id: { in: resultIds } },
-    select: { id: true, documentId: true, chunkIndex: true },
+    select: { documentId: true },
   })
 
-  const docCount = new Map<string, number>()
-  for (const m of meta) docCount.set(m.documentId, (docCount.get(m.documentId) ?? 0) + 1)
+  const documentIds = [...new Set(meta.map((m) => m.documentId))]
+  if (documentIds.length === 0) return results
 
-  const expandMeta = meta.filter((m) => (docCount.get(m.documentId) ?? 0) > 1)
-  if (expandMeta.length === 0) return results
-
-  const nextChunks = await db.chunk.findMany({
+  const remainingChunks = await db.chunk.findMany({
     where: {
-      OR: expandMeta.flatMap((m) => [
-        { documentId: m.documentId, chunkIndex: m.chunkIndex + 1 },
-        { documentId: m.documentId, chunkIndex: m.chunkIndex + 2 },
-      ]),
+      documentId: { in: documentIds },
       id: { notIn: resultIds },
     },
     select: {
@@ -168,7 +162,7 @@ const expandWithNextChunks = async (results: SearchResult[]): Promise<SearchResu
     },
   })
 
-  const expanded: SearchResult[] = nextChunks.map((c) => ({
+  const expanded: SearchResult[] = remainingChunks.map((c) => ({
     id: c.id,
     content: c.content,
     documentTitle: c.document.title,
@@ -217,12 +211,12 @@ export const searchChunks = async (query: string, limit = 5): Promise<SearchResu
   }
 
   // If embedding timed out or failed, fall back to FTS + context expansion
-  if (!queryEmbedding) return expandWithNextChunks(ftsResults.slice(0, limit))
+  if (!queryEmbedding) return expandToFullDocuments(ftsResults.slice(0, limit))
 
   const embeddingResults = await runEmbedding(queryEmbedding, fetchLimit).catch(
     () => [] as SearchResult[],
   )
 
   const merged = mergeHybrid(ftsResults, embeddingResults, limit)
-  return expandWithNextChunks(merged)
+  return expandToFullDocuments(merged)
 }

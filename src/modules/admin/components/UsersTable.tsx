@@ -35,6 +35,7 @@ import { useMemo, useState } from 'react'
 
 import { deleteUser, updateUserRole } from '../api'
 import type { AdminUser } from '../types'
+import { maskEmail } from '../utils'
 import DeleteUserModal from './DeleteUserModal'
 
 const ROLE_OPTIONS = [
@@ -110,7 +111,7 @@ export default function UsersTable({ users: initialUsers }: UsersTableProps) {
                 {row.original.name ?? 'Bez nazwy'}
               </Text>
               <Text size="xs" c="dimmed">
-                {row.original.email}
+                {maskEmail(row.original.email)}
               </Text>
             </div>
           </Group>
@@ -283,7 +284,7 @@ export default function UsersTable({ users: initialUsers }: UsersTableProps) {
                         {user.name ?? 'Bez nazwy'}
                       </Text>
                       <Text size="xs" c="dimmed" truncate="end">
-                        {user.email}
+                        {maskEmail(user.email)}
                       </Text>
                     </div>
                   </Group>
