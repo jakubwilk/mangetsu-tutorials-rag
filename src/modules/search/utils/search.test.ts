@@ -21,7 +21,7 @@ vi.mock('server/ai/embeddings', () => ({
 }))
 
 interface ChunkFindManyArgs {
-  where?: { id?: { in?: string[]; notIn?: string[] } }
+  where?: { id?: { in?: string[]; notIn?: string[] }; documentId?: { in?: string[] } }
 }
 
 const sqlOf = (strings: TemplateStringsArray): string => strings.join(' ')
@@ -97,7 +97,7 @@ describe('searchChunks', () => {
     expect(ids.indexOf('embed-only')).toBeLessThan(ids.indexOf('fts-only'))
   })
 
-  it('expands results with the next sequential chunk when a document has more than one hit', async () => {
+  it('expands results with every remaining chunk of a document that has more than one hit', async () => {
     embedTextMock.mockResolvedValue(null)
     queryRawMock.mockImplementation((strings: TemplateStringsArray) => {
       const sql = sqlOf(strings)
@@ -112,8 +112,8 @@ describe('searchChunks', () => {
     findManyMock.mockImplementation((args: ChunkFindManyArgs) => {
       if (args.where?.id?.in) {
         return Promise.resolve([
-          { id: 'c0', documentId: 'doc-c', chunkIndex: 0 },
-          { id: 'c2', documentId: 'doc-c', chunkIndex: 2 },
+          { documentId: 'doc-c' },
+          { documentId: 'doc-c' },
         ])
       }
       return Promise.resolve([
@@ -124,5 +124,47 @@ describe('searchChunks', () => {
     const result = await searchChunks('kolejka', 5)
 
     expect(result.map((r) => r.id)).toEqual(expect.arrayContaining(['c0', 'c2', 'c1']))
+  })
+
+  it('expands results with the rest of the document even when it only has a single hit', async () => {
+    embedTextMock.mockResolvedValue(null)
+    queryRawMock.mockImplementation((strings: TemplateStringsArray) => {
+      const sql = sqlOf(strings)
+      if (sql.includes('to_tsquery')) {
+        return Promise.resolve([
+          {
+            id: 'stat-sila',
+            content: 'Siła...',
+            documentTitle: 'Statystyki',
+            category: 'mechanika',
+            rank: 0.9,
+          },
+        ])
+      }
+      return Promise.resolve([])
+    })
+    findManyMock.mockImplementation((args: ChunkFindManyArgs) => {
+      if (args.where?.id?.in) {
+        return Promise.resolve([{ documentId: 'doc-statystyki' }])
+      }
+      return Promise.resolve([
+        {
+          id: 'stat-wytrzymalosc',
+          content: 'Wytrzymałość...',
+          document: { title: 'Statystyki', category: 'mechanika' },
+        },
+        {
+          id: 'stat-szybkosc',
+          content: 'Szybkość...',
+          document: { title: 'Statystyki', category: 'mechanika' },
+        },
+      ])
+    })
+
+    const result = await searchChunks('statystyki', 5)
+
+    expect(result.map((r) => r.id)).toEqual(
+      expect.arrayContaining(['stat-sila', 'stat-wytrzymalosc', 'stat-szybkosc']),
+    )
   })
 })
