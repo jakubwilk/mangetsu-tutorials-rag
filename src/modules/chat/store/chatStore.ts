@@ -168,6 +168,27 @@ export const chatStore = {
     notify()
   },
 
+  deleteSession(id: string) {
+    const sessions = snapshot.sessions.filter((s) => s.id !== id)
+
+    let { activeSessionId } = snapshot
+    if (activeSessionId === id) {
+      const existing = sessions[0]
+      if (existing) {
+        activeSessionId = existing.id
+      } else {
+        const session = createSession()
+        sessions.push(session)
+        activeSessionId = session.id
+      }
+      persistActiveId(activeSessionId)
+    }
+
+    snapshot = { ...snapshot, sessions, activeSessionId }
+    persistSessions(sessions)
+    notify()
+  },
+
   getActiveSession(): ChatSession | undefined {
     return snapshot.sessions.find((s) => s.id === snapshot.activeSessionId)
   },

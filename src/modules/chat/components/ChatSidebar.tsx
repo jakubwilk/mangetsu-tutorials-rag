@@ -1,9 +1,14 @@
 'use client'
 
-import { Box, Button, Divider, Group, Stack, Text, UnstyledButton } from '@mantine/core'
-import { useSyncExternalStore } from 'react'
+import { ActionIcon, Box, Button, Divider, Group, Stack, Text, UnstyledButton } from '@mantine/core'
+import { IconTrash } from '@tabler/icons-react'
+import { notifyError } from 'common/utils'
+import { useState, useSyncExternalStore } from 'react'
 
+import { deleteSession } from '../api'
 import { chatStore } from '../store'
+import type { ChatSession } from '../types'
+import DeleteSessionModal from './DeleteSessionModal'
 
 const PANEL_WIDTH = { width: '20vw', maxWidth: 300, flexShrink: 0 }
 
@@ -24,7 +29,23 @@ export default function ChatSidebar({ fluid = false }: ChatSidebarProps) {
     chatStore.getServerSnapshot,
   )
 
+  const [sessionPendingDelete, setSessionPendingDelete] = useState<ChatSession | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+
   const visibleSessions = sessions.filter((s) => s.messages.length > 0)
+
+  const handleConfirmDelete = async (sessionId: string) => {
+    setIsDeleting(true)
+    try {
+      await deleteSession(sessionId)
+      chatStore.deleteSession(sessionId)
+      setSessionPendingDelete(null)
+    } catch {
+      notifyError('Nie udało się usunąć czatu. Spróbuj ponownie.')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
 
   return (
     <Box
@@ -60,20 +81,32 @@ export default function ChatSidebar({ fluid = false }: ChatSidebarProps) {
           </Text>
         ) : (
           visibleSessions.map((session) => (
-            <UnstyledButton
-              key={session.id}
-              onClick={() => chatStore.switchSession(session.id)}
-              style={{
-                padding: '6px 8px',
-                borderRadius: 6,
-                background:
-                  session.id === activeSessionId ? 'var(--mantine-color-dark-5)' : 'transparent',
-              }}
-            >
-              <Text size="xs" c={session.id === activeSessionId ? 'white' : 'dimmed'} truncate>
-                {getSessionPreview(session.messages)}
-              </Text>
-            </UnstyledButton>
+            <Group key={session.id} gap={4} wrap="nowrap">
+              <UnstyledButton
+                onClick={() => chatStore.switchSession(session.id)}
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  padding: '6px 8px',
+                  borderRadius: 6,
+                  background:
+                    session.id === activeSessionId ? 'var(--mantine-color-dark-5)' : 'transparent',
+                }}
+              >
+                <Text size="xs" c={session.id === activeSessionId ? 'white' : 'dimmed'} truncate>
+                  {getSessionPreview(session.messages)}
+                </Text>
+              </UnstyledButton>
+              <ActionIcon
+                variant="subtle"
+                color="gray"
+                size="sm"
+                onClick={() => setSessionPendingDelete(session)}
+                aria-label="Usuń czat"
+              >
+                <IconTrash size={14} />
+              </ActionIcon>
+            </Group>
           ))
         )}
       </Stack>
@@ -93,6 +126,14 @@ export default function ChatSidebar({ fluid = false }: ChatSidebarProps) {
           </Text>
         </Group>
       </Box>
+
+      <DeleteSessionModal
+        session={sessionPendingDelete}
+        preview={sessionPendingDelete ? getSessionPreview(sessionPendingDelete.messages) : ''}
+        loading={isDeleting}
+        onClose={() => setSessionPendingDelete(null)}
+        onConfirm={handleConfirmDelete}
+      />
     </Box>
   )
 }

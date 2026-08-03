@@ -1,4 +1,5 @@
 export { ChatRequestError } from './chatRequestError'
+export { deleteSession } from './deleteSession'
 export { fetchRateLimit } from './fetchRateLimit'
 export { sendMessage } from './sendMessage'
 export { validateSessions } from './validateSessions'
